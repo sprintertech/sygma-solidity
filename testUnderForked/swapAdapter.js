@@ -5,7 +5,6 @@ const TruffleAssert = require("truffle-assertions");
 const Ethers = require("ethers");
 
 const Helpers = require("../test/helpers");
-const { provider } = require("ganache");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -172,11 +171,15 @@ contract("SwapAdapter", async (accounts) => {
       depositTx.tx
     );
 
-    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", {fromBlock: depositTx.receipt.blockNumber});
     const amountOut = events[events.length - 1].args.amountOut;
 
-    const depositData = await Helpers.createOptionalContractCallDepositData(amountOut - fee, recipientAddress, executionGasAmount,
-      message);
+    const depositData = await Helpers.createOptionalContractCallDepositData(
+      amountOut - fee,
+      recipientAddress,
+      executionGasAmount,
+      message
+    );
 
     TruffleAssert.eventEmitted(internalTx, "Deposit", (event) => {
       return (
@@ -228,12 +231,16 @@ contract("SwapAdapter", async (accounts) => {
       depositTx.tx
     );
 
-    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", {fromBlock: depositTx.receipt.blockNumber});
     const amountOut = events[events.length - 1].args.amountOut;
     expect((await usdc.balanceOf(ERC20HandlerInstance.address)).toString()).to.eq(amountOut.toString());
 
-    const depositData = await Helpers.createOptionalContractCallDepositData(amountOut.toNumber(), recipientAddress, executionGasAmount,
-    message);
+    const depositData = await Helpers.createOptionalContractCallDepositData(
+      amountOut.toNumber(),
+      recipientAddress,
+      executionGasAmount,
+      message
+    );
 
     TruffleAssert.eventEmitted(internalTx, "Deposit", (event) => {
       return (
@@ -367,7 +374,6 @@ contract("SwapAdapter", async (accounts) => {
   it("should fail if no msg.value supplied", async () => {
     const pathTokens = [WETH_ADDRESS, USDC_ADDRESS];
     const pathFees = [500];
-    const amount = Ethers.utils.parseEther("1");
     const amountOutMinimum = 2000000000;
     await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
     await Helpers.expectToRevertWithCustomError(
@@ -392,7 +398,6 @@ contract("SwapAdapter", async (accounts) => {
   it("should fail if msg.value is less than fee", async () => {
     const pathTokens = [WETH_ADDRESS, USDC_ADDRESS];
     const pathFees = [500];
-    const amount = Ethers.utils.parseEther("1");
     const amountOutMinimum = 2000000000;
     await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
     await Helpers.expectToRevertWithCustomError(
