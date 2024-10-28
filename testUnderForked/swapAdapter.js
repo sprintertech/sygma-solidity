@@ -169,7 +169,7 @@ contract("SwapAdapter", async (accounts) => {
       depositTx.tx
     );
 
-    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", {fromBlock: depositTx.receipt.blockNumber});
     const amountOut = events[events.length - 1].args.amountOut;
 
     const depositData = await Helpers.createERCDepositData(amountOut - fee, 20, recipientAddress);
@@ -222,7 +222,7 @@ contract("SwapAdapter", async (accounts) => {
       depositTx.tx
     );
 
-    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", {fromBlock: depositTx.receipt.blockNumber});
     const amountOut = events[events.length - 1].args.amountOut;
     expect((await usdc.balanceOf(ERC20HandlerInstance.address)).toString()).to.eq(amountOut.toString());
 
