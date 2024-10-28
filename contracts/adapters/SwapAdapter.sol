@@ -83,6 +83,122 @@ contract SwapAdapter is AccessControl {
         @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
         @param destinationDomainID  ID of chain deposit will be bridged to.
         @param recipient Recipient of the deposit.
+        @param  token Input token to be swapped.
+        @param  tokenAmount Amount of tokens to be swapped.
+        @param amountOutMinimum Minimal amount of ETH to be accepted as a swap output.
+        @param pathTokens Addresses of the tokens for Uniswap swap. WETH address is used for ETH.
+        @param pathFees Fees for Uniswap pools.
+    */
+    function depositTokensToEth(
+        uint8 destinationDomainID,
+        address recipient,
+        address token,
+        uint256 tokenAmount,
+        uint256 amountOutMinimum,
+        address[] calldata pathTokens,
+        uint24[] calldata pathFees
+    ) external {
+        if (tokenToResourceID[token] == bytes32(0)) revert TokenInvalid();
+
+        // Swap all tokens to ETH (exact input)
+        IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
+        IERC20(token).safeApprove(address(_swapRouter), tokenAmount);
+
+        uint256 amount = swapTokens(
+            pathTokens,
+            pathFees,
+            token,
+            _weth,
+            tokenAmount,
+            amountOutMinimum,
+            0
+        );
+
+        IWETH(_weth).withdraw(amount);
+
+        // Make Native Token deposit
+        _nativeTokenAdapter.depositToEVM{value: amount}(destinationDomainID, recipient);
+
+        // Return unspent fee to msg.sender
+        uint256 leftover = address(this).balance;
+        if (leftover > 0) {
+            payable(msg.sender).call{value: leftover}("");
+            // Do not revert if sender does not want to receive.
+        }
+    }
+
+    /**
+        @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
+        @param destinationDomainID  ID of chain deposit will be bridged to.
+        @param recipient Recipient of the deposit.
+        @param  token Output token to be deposited after swapping.
+        @param amountOutMinimum Minimal amount of tokens to be accepted as a swap output.
+        @param pathTokens Addresses of the tokens for Uniswap swap. WETH address is used for ETH.
+        @param pathFees Fees for Uniswap pools.
+    */
+   function depositEthToTokens(
+        uint8 destinationDomainID,
+        address recipient,
+        address token,
+        uint256 amountOutMinimum,
+        address[] calldata pathTokens,
+        uint24[] calldata pathFees
+    ) external payable {
+        LocalVars memory vars;
+        vars.resourceID = tokenToResourceID[token];
+        if (vars.resourceID == bytes32(0)) revert TokenInvalid();
+
+        // Compose depositData
+        vars.depositDataAfterAmount = abi.encodePacked(
+            uint256(20),
+            recipient
+        );
+        if (msg.value == 0) revert InsufficientAmount(msg.value);
+
+        vars.feeHandlerRouter = _bridge._feeHandler();
+        (vars.fee, ) = IFeeHandler(vars.feeHandlerRouter).calculateFee(
+            address(this),
+            _bridge._domainID(),
+            destinationDomainID,
+            vars.resourceID,
+            abi.encodePacked(msg.value, vars.depositDataAfterAmount),
+            ""  // feeData - not parsed
+        );
+
+        if (msg.value < vars.fee) revert MsgValueLowerThanFee(msg.value);
+        // Convert everything except the fee
+        vars.swapAmount = msg.value - vars.fee;
+        vars.amountOut = swapTokens(
+            pathTokens,
+            pathFees,
+            _weth,
+            token,
+            vars.swapAmount,
+            amountOutMinimum,
+            vars.swapAmount
+        );
+
+        vars.depositData = abi.encodePacked(
+            vars.amountOut,
+            vars.depositDataAfterAmount
+        );
+
+        vars.ERC20HandlerAddress = _bridge._resourceIDToHandlerAddress(vars.resourceID);
+        IERC20(token).safeApprove(address(vars.ERC20HandlerAddress), vars.amountOut);
+        _bridge.deposit{value: vars.fee}(destinationDomainID, vars.resourceID, vars.depositData, "");
+
+        // Return unspent fee to msg.sender
+        vars.leftover = address(this).balance;
+        if (vars.leftover > 0) {
+            payable(msg.sender).call{value: vars.leftover}("");
+            // Do not revert if sender does not want to receive.
+        }
+    }
+
+    /**
+        @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
+        @param destinationDomainID  ID of chain deposit will be bridged to.
+        @param recipient Recipient of the deposit.
         @param gas The amount of gas needed to successfully execute the call to recipient on the destination. Fee amount is
                    directly affected by this value.
         @param message Arbitrary encoded bytes array that will be passed as the third argument in the
@@ -95,7 +211,7 @@ contract SwapAdapter is AccessControl {
         @param pathTokens Addresses of the tokens for Uniswap swap. WETH address is used for ETH.
         @param pathFees Fees for Uniswap pools.
     */
-    function depositTokensToEth(
+    function depositTokensToEthWithMessage(
         uint8 destinationDomainID,
         address recipient,
         uint256 gas, 
@@ -103,8 +219,8 @@ contract SwapAdapter is AccessControl {
         address token,
         uint256 tokenAmount,
         uint256 amountOutMinimum,
-        address[] memory pathTokens,
-        uint24[] memory pathFees
+        address[] calldata pathTokens,
+        uint24[] calldata pathFees
     ) external {
         if (tokenToResourceID[token] == bytes32(0)) revert TokenInvalid();
 
@@ -112,26 +228,16 @@ contract SwapAdapter is AccessControl {
         IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
         IERC20(token).safeApprove(address(_swapRouter), tokenAmount);
 
-        uint256 amount;
+        uint256 amount = swapTokens(
+            pathTokens,
+            pathFees,
+            token,
+            _weth,
+            tokenAmount,
+            amountOutMinimum,
+            0
+        );
 
-        {
-            bytes memory path = _verifyAndEncodePath(
-                pathTokens,
-                pathFees,
-                token,
-                _weth
-            );
-            IV3SwapRouter.ExactInputParams memory params = IV3SwapRouter.ExactInputParams({
-                path: path,
-                recipient: address(this),
-                amountIn: tokenAmount,
-                amountOutMinimum: amountOutMinimum
-            });
-
-            amount = _swapRouter.exactInput(params);
-        }
-
-        emit TokensSwapped(_weth, amount);
         IWETH(_weth).withdraw(amount);
 
         // Make Native Token deposit
@@ -165,15 +271,15 @@ contract SwapAdapter is AccessControl {
         @param pathTokens Addresses of the tokens for Uniswap swap. WETH address is used for ETH.
         @param pathFees Fees for Uniswap pools.
     */
-   function depositEthToTokens(
+   function depositEthToTokensWithMessage(
         uint8 destinationDomainID,
         address recipient,
         uint256 gas, 
         bytes calldata message,
         address token,
         uint256 amountOutMinimum,
-        address[] memory pathTokens,
-        uint24[] memory pathFees
+        address[] calldata pathTokens,
+        uint24[] calldata pathFees
     ) external payable {
         LocalVars memory vars;
         vars.resourceID = tokenToResourceID[token];
@@ -202,21 +308,15 @@ contract SwapAdapter is AccessControl {
         vars.swapAmount = msg.value - vars.fee;
         // Convert everything except the fee
 
-        // Swap ETH to tokens (exact input)
-        vars.path = _verifyAndEncodePath(
+        vars.amountOut = swapTokens(
             pathTokens,
             pathFees,
             _weth,
-            token 
+            token,
+            vars.swapAmount,
+            amountOutMinimum,
+            vars.swapAmount
         );
-        vars.params = IV3SwapRouter.ExactInputParams({
-            path: vars.path,
-            recipient: address(this),
-            amountIn: vars.swapAmount,
-            amountOutMinimum: amountOutMinimum
-        });
-
-        vars.amountOut = _swapRouter.exactInput{value: vars.swapAmount}(vars.params);
         emit TokensSwapped(token, vars.amountOut);
 
         vars.depositData = abi.encodePacked(
@@ -236,9 +336,35 @@ contract SwapAdapter is AccessControl {
         }
     }
 
+    function swapTokens(
+        address[] calldata pathTokens,
+        uint24[] calldata pathFees,
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 amountOutMinimum,
+        uint256 valueToSend
+    ) internal returns(uint256 amount) {
+        bytes memory path = _verifyAndEncodePath(
+            pathTokens,
+            pathFees,
+            tokenIn,
+            tokenOut
+        );
+        IV3SwapRouter.ExactInputParams memory params = IV3SwapRouter.ExactInputParams({
+            path: path,
+            recipient: address(this),
+            amountIn: amountIn,
+            amountOutMinimum: amountOutMinimum
+        });
+
+        amount = _swapRouter.exactInput{value: valueToSend}(params);
+        emit TokensSwapped(tokenOut, amount);
+    }
+
     function _verifyAndEncodePath(
-        address[] memory tokens,
-        uint24[] memory fees,
+        address[] calldata tokens,
+        uint24[] calldata fees,
         address tokenIn,
         address tokenOut
     ) internal view returns (bytes memory path) {

@@ -135,7 +135,6 @@ contract("SwapAdapter", async (accounts) => {
 
     // set MPC address to unpause the Bridge
     await BridgeInstance.endKeygen(Helpers.mpcAddress);
-
   });
 
   it("should swap tokens to ETH and bridge ETH", async () => {
@@ -146,6 +145,109 @@ contract("SwapAdapter", async (accounts) => {
     await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
     await usdc.approve(SwapAdapterInstance.address, amount, {from: USDC_OWNER_ADDRESS});
     const depositTx = await SwapAdapterInstance.depositTokensToEth(
+      destinationDomainID,
+      recipientAddress,
+      USDC_ADDRESS,
+      amount,
+      amountOutMinimum,
+      pathTokens,
+      pathFees,
+      {from: USDC_OWNER_ADDRESS}
+    );
+    expect(await web3.eth.getBalance(SwapAdapterInstance.address)).to.eq("0");
+    expect(await web3.eth.getBalance(BasicFeeHandlerInstance.address)).to.eq(fee.toString());
+    expect(await web3.eth.getBalance(NativeTokenHandlerInstance.address)).to.not.eq("0");
+
+    const depositCount = await BridgeInstance._depositCounts.call(
+      destinationDomainID
+    );
+    const expectedDepositNonce = 1;
+    assert.strictEqual(depositCount.toNumber(), expectedDepositNonce);
+
+    const internalTx = await TruffleAssert.createTransactionResult(
+      BridgeInstance,
+      depositTx.tx
+    );
+
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const amountOut = events[events.length - 1].args.amountOut;
+
+    const depositData = await Helpers.createERCDepositData(amountOut - fee, 20, recipientAddress);
+
+    TruffleAssert.eventEmitted(internalTx, "Deposit", (event) => {
+      return (
+        event.destinationDomainID.toNumber() === destinationDomainID &&
+        event.resourceID === resourceID_Native.toLowerCase() &&
+        event.depositNonce.toNumber() === expectedDepositNonce &&
+        event.user === NativeTokenAdapterInstance.address &&
+        event.data === depositData.toLowerCase() &&
+        event.handlerResponse === null
+      );
+    });
+  });
+
+  it("should swap ETH to tokens and bridge tokens", async () => {
+    const pathTokens = [WETH_ADDRESS, USDC_ADDRESS];
+    const pathFees = [500];
+    const amount = Ethers.utils.parseEther("1");
+    const amountOutMinimum = 2000000000;
+    await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
+    const depositTx = await SwapAdapterInstance.depositEthToTokens(
+      destinationDomainID,
+      recipientAddress,
+      USDC_ADDRESS,
+      amountOutMinimum,
+      pathTokens,
+      pathFees,
+      {
+        value: amount,
+        from: depositorAddress
+      }
+    );
+    expect((await usdc.balanceOf(SwapAdapterInstance.address)).toString()).to.eq("0");
+    expect(await web3.eth.getBalance(SwapAdapterInstance.address)).to.eq("0");
+    expect(await web3.eth.getBalance(BridgeInstance.address)).to.eq("0");
+    expect(await web3.eth.getBalance(FeeHandlerRouterInstance.address)).to.eq("0");
+    expect(await web3.eth.getBalance(BasicFeeHandlerInstance.address)).to.eq(fee.toString());
+    expect(await usdc.balanceOf(ERC20HandlerInstance.address)).to.not.eq("0");
+
+    const depositCount = await BridgeInstance._depositCounts.call(
+      destinationDomainID
+    );
+    const expectedDepositNonce = 1;
+    assert.strictEqual(depositCount.toNumber(), expectedDepositNonce);
+
+    const internalTx = await TruffleAssert.createTransactionResult(
+      BridgeInstance,
+      depositTx.tx
+    );
+
+    const events = await SwapAdapterInstance.getPastEvents("TokensSwapped", { fromBlock: depositTx.receipt.blockNumber });
+    const amountOut = events[events.length - 1].args.amountOut;
+    expect((await usdc.balanceOf(ERC20HandlerInstance.address)).toString()).to.eq(amountOut.toString());
+
+    const depositData = await Helpers.createERCDepositData(amountOut.toNumber(), 20, recipientAddress);
+
+    TruffleAssert.eventEmitted(internalTx, "Deposit", (event) => {
+      return (
+        event.destinationDomainID.toNumber() === destinationDomainID &&
+        event.resourceID === resourceID_USDC.toLowerCase() &&
+        event.depositNonce.toNumber() === expectedDepositNonce &&
+        event.user === SwapAdapterInstance.address &&
+        event.data === depositData.toLowerCase() &&
+        event.handlerResponse === null
+      );
+    });
+  });
+
+  it("should swap tokens to ETH and bridge ETH with contract call", async () => {
+    const pathTokens = [USDC_ADDRESS, WETH_ADDRESS];
+    const pathFees = [500];
+    const amount = 1000000;
+    const amountOutMinimum = Ethers.utils.parseUnits("200000", "gwei");
+    await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
+    await usdc.approve(SwapAdapterInstance.address, amount, {from: USDC_OWNER_ADDRESS});
+    const depositTx = await SwapAdapterInstance.depositTokensToEthWithMessage(
       destinationDomainID,
       recipientAddress,
       executionGasAmount,
@@ -193,13 +295,13 @@ contract("SwapAdapter", async (accounts) => {
     });
   });
 
-  it("should swap ETH to tokens and bridge tokens", async () => {
+  it("should swap ETH to tokens and bridge tokens with contract call", async () => {
     const pathTokens = [WETH_ADDRESS, USDC_ADDRESS];
     const pathFees = [500];
     const amount = Ethers.utils.parseEther("1");
     const amountOutMinimum = 2000000000;
     await SwapAdapterInstance.setTokenResourceID(USDC_ADDRESS, resourceID_USDC);
-    const depositTx = await SwapAdapterInstance.depositEthToTokens(
+    const depositTx = await SwapAdapterInstance.depositEthToTokensWithMessage(
       destinationDomainID,
       recipientAddress,
       executionGasAmount,
@@ -264,8 +366,6 @@ contract("SwapAdapter", async (accounts) => {
       SwapAdapterInstance.depositTokensToEth(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amount,
         amountOutMinimum,
@@ -287,8 +387,6 @@ contract("SwapAdapter", async (accounts) => {
       SwapAdapterInstance.depositTokensToEth.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amount,
         amountOutMinimum,
@@ -311,8 +409,6 @@ contract("SwapAdapter", async (accounts) => {
       SwapAdapterInstance.depositTokensToEth.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amount,
         amountOutMinimum,
@@ -335,8 +431,6 @@ contract("SwapAdapter", async (accounts) => {
       SwapAdapterInstance.depositTokensToEth.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amount,
         amountOutMinimum,
@@ -358,8 +452,6 @@ contract("SwapAdapter", async (accounts) => {
       SwapAdapterInstance.depositTokensToEth.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amount,
         amountOutMinimum,
@@ -380,8 +472,6 @@ contract("SwapAdapter", async (accounts) => {
         SwapAdapterInstance.depositEthToTokens.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amountOutMinimum,
         pathTokens,
@@ -404,8 +494,6 @@ contract("SwapAdapter", async (accounts) => {
         SwapAdapterInstance.depositEthToTokens.call(
         destinationDomainID,
         recipientAddress,
-        executionGasAmount,
-        message,
         USDC_ADDRESS,
         amountOutMinimum,
         pathTokens,
