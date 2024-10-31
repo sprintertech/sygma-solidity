@@ -128,7 +128,8 @@ contract SwapAdapter is AccessControl {
     }
 
     /**
-        @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
+        @notice Function for depositing ETH, performing swap to defined tokens and bridging
+            the tokens.
         @param destinationDomainID  ID of chain deposit will be bridged to.
         @param recipient Recipient of the deposit.
         @param  token Output token to be deposited after swapping.
@@ -196,7 +197,8 @@ contract SwapAdapter is AccessControl {
     }
 
     /**
-        @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
+        @notice Function for depositing tokens, performing swap to ETH, bridging the ETH and executing
+            a contract call on destination.
         @param destinationDomainID  ID of chain deposit will be bridged to.
         @param recipient Recipient of the deposit.
         @param gas The amount of gas needed to successfully execute the call to recipient on the destination. Fee amount is
@@ -257,7 +259,8 @@ contract SwapAdapter is AccessControl {
     }
 
     /**
-        @notice Function for depositing tokens, performing swap to ETH and bridging the ETH.
+        @notice Function for depositing ETH, performing swap to defined tokens, bridging
+            the tokens and executing a contract call on destination.
         @param destinationDomainID  ID of chain deposit will be bridged to.
         @param recipient Recipient of the deposit.
         @param gas The amount of gas needed to successfully execute the call to recipient on the destination. Fee amount is
