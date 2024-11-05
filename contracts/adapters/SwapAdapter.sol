@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity 0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../contracts/interfaces/IBridge.sol";
 import "../../contracts/interfaces/IFeeHandler.sol";
 import "../../contracts/adapters/interfaces/INativeTokenAdapter.sol";
@@ -18,9 +17,9 @@ import "../../contracts/adapters/interfaces/IPeripheryPayments.sol";
         and then makes a deposit to the Bridge.
     @author ChainSafe Systems.
  */
-contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract SwapAdapter is AccessControl {
 
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeERC20 for IERC20;
 
     IBridge public immutable _bridge;
     address public immutable _weth;
@@ -57,28 +56,26 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     event TokenResourceIDSet(address token, bytes32 resourceID);
     event TokensSwapped(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
         IBridge bridge,
         address weth,
         IV3SwapRouter swapRouter,
         INativeTokenAdapter nativeTokenAdapter
     ) {
-        _disableInitializers();
         _bridge = bridge;
         _weth = weth;
         _swapRouter = swapRouter;
         _nativeTokenAdapter = nativeTokenAdapter;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-
-    function initialize() public initializer {
-        _transferOwnership(msg.sender);
-        __UUPSUpgradeable_init();
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
+        _;
     }
 
     // Admin functions
-    function setTokenResourceID(address token, bytes32 resourceID) external onlyOwner {
+    function setTokenResourceID(address token, bytes32 resourceID) external onlyAdmin {
         if (tokenToResourceID[token] == resourceID) revert AlreadySet();
         tokenToResourceID[token] = resourceID;
         emit TokenResourceIDSet(token, resourceID);
@@ -128,8 +125,8 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         vars.totalAmountOut = amountOut + vars.fee;
 
         // Swap tokens to ETH (exact output)
-        IERC20Upgradeable(token).safeTransferFrom(msg.sender, address(this), amountInMax);
-        IERC20Upgradeable(token).safeApprove(address(_swapRouter), amountInMax);
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amountInMax);
+        IERC20(token).safeApprove(address(_swapRouter), amountInMax);
 
         vars.amountIn = swapTokens(
             pathTokens,
@@ -148,8 +145,8 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
         // Refund tokens
         if (vars.amountIn < amountInMax) {
-            IERC20Upgradeable(token).safeApprove(address(_swapRouter), 0);
-            IERC20Upgradeable(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
+            IERC20(token).safeApprove(address(_swapRouter), 0);
+            IERC20(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
         }
 
         // Return unspent fee to msg.sender
@@ -191,7 +188,6 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
             recipient
         );
         if (msg.value == 0) revert InsufficientAmount(msg.value);
-
         vars.depositData = abi.encodePacked(
             amountOut,
             vars.depositDataAfterAmount
@@ -221,9 +217,8 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         );
         IPeripheryPayments(address(_swapRouter)).refundETH();
 
-
         vars.ERC20HandlerAddress = _bridge._resourceIDToHandlerAddress(vars.resourceID);
-        IERC20Upgradeable(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
+        IERC20(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
         _bridge.deposit{value: vars.fee}(destinationDomainID, vars.resourceID, vars.depositData, "");
 
         // Return unspent native currency to msg.sender
@@ -290,8 +285,8 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         vars.totalAmountOut = amountOut + vars.fee;
 
         // Swap tokens to ETH (exact output)
-        IERC20Upgradeable(token).safeTransferFrom(msg.sender, address(this), amountInMax);
-        IERC20Upgradeable(token).safeApprove(address(_swapRouter), amountInMax);
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amountInMax);
+        IERC20(token).safeApprove(address(_swapRouter), amountInMax);
 
         vars.amountIn = swapTokens(
             pathTokens,
@@ -307,8 +302,8 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
         // Refund tokens
         if (vars.amountIn < amountInMax) {
-            IERC20Upgradeable(token).safeApprove(address(_swapRouter), 0);
-            IERC20Upgradeable(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
+            IERC20(token).safeApprove(address(_swapRouter), 0);
+            IERC20(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
         }
 
         // Make Native Token deposit
@@ -369,14 +364,12 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
             message
         );
         if (msg.value == 0) revert InsufficientAmount(msg.value);
-
         vars.depositData = abi.encodePacked(
             amountOut,
             vars.depositDataAfterAmount
         );
 
         vars.feeHandlerRouter = _bridge._feeHandler();
-
         (vars.fee, ) = IFeeHandler(vars.feeHandlerRouter).calculateFee(
             address(this),
             _bridge._domainID(),
@@ -401,7 +394,7 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         IPeripheryPayments(address(_swapRouter)).refundETH();
 
         vars.ERC20HandlerAddress = _bridge._resourceIDToHandlerAddress(vars.resourceID);
-        IERC20Upgradeable(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
+        IERC20(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
         _bridge.deposit{value: vars.fee}(destinationDomainID, vars.resourceID, vars.depositData, "");
 
         // Return unspent native currency to msg.sender
@@ -459,12 +452,6 @@ contract SwapAdapter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         }
         path = abi.encodePacked(path, tokens[tokens.length - 1]);
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        onlyOwner
-        override
-    {}
 
     receive() external payable {}
 }
