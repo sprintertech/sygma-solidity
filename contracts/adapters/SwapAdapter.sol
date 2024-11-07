@@ -9,8 +9,8 @@ import "../../contracts/interfaces/IBridge.sol";
 import "../../contracts/interfaces/IFeeHandler.sol";
 import "../../contracts/adapters/interfaces/INativeTokenAdapter.sol";
 import "../../contracts/adapters/interfaces/IWETH.sol";
-import "../../contracts/adapters/interfaces/IV3SwapRouter.sol";
-import "../../contracts/adapters/interfaces/IPeripheryPayments.sol";
+import "../../contracts/adapters/interfaces/IUniversalRouter.sol";
+import "../../contracts/adapters/interfaces/IPermit2.sol";
 
 /**
     @title Contract that swaps tokens to ETH or ETH to tokens using Uniswap
@@ -23,8 +23,9 @@ contract SwapAdapter is AccessControl {
 
     IBridge public immutable _bridge;
     address public immutable _weth;
-    IV3SwapRouter public immutable _swapRouter;
+    IUniversalRouter public immutable _swapRouter;
     INativeTokenAdapter public immutable _nativeTokenAdapter;
+    IPermit2 public immutable _permit2;
 
     mapping(address => bytes32) public tokenToResourceID;
 
@@ -40,7 +41,6 @@ contract SwapAdapter is AccessControl {
         uint256 leftover;
         bytes depositDataAfterAmount;
         bytes path;
-        IV3SwapRouter.ExactInputParams params;
         bytes depositData;
     }
 
@@ -56,16 +56,25 @@ contract SwapAdapter is AccessControl {
     event TokenResourceIDSet(address token, bytes32 resourceID);
     event TokensSwapped(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
+    /**
+        @dev The contract uses Uniswap UniversalRouter and Permit2. These addresses
+        should be set during initialization. Addresses of deployed Uniswap contracts can be
+        found in Uniswap docs.
+    */
+
     constructor(
         IBridge bridge,
         address weth,
-        IV3SwapRouter swapRouter,
+        IUniversalRouter swapRouter,
+        IPermit2 permit2,
         INativeTokenAdapter nativeTokenAdapter
     ) {
         _bridge = bridge;
         _weth = weth;
         _swapRouter = swapRouter;
+        _permit2 = permit2;
         _nativeTokenAdapter = nativeTokenAdapter;
+        IERC20(_weth).approve(address(_permit2), type(uint256).max);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -78,6 +87,7 @@ contract SwapAdapter is AccessControl {
     function setTokenResourceID(address token, bytes32 resourceID) external onlyAdmin {
         if (tokenToResourceID[token] == resourceID) revert AlreadySet();
         tokenToResourceID[token] = resourceID;
+        IERC20(token).approve(address(_permit2), type(uint256).max);
         emit TokenResourceIDSet(token, resourceID);
     }
 
@@ -126,7 +136,6 @@ contract SwapAdapter is AccessControl {
 
         // Swap tokens to ETH (exact output)
         IERC20(token).safeTransferFrom(msg.sender, address(this), amountInMax);
-        IERC20(token).safeApprove(address(_swapRouter), amountInMax);
 
         vars.amountIn = swapTokens(
             pathTokens,
@@ -134,8 +143,7 @@ contract SwapAdapter is AccessControl {
             token,
             _weth,
             amountInMax,
-            vars.totalAmountOut,
-            0
+            vars.totalAmountOut
         );
 
         IWETH(_weth).withdraw(vars.totalAmountOut);
@@ -145,8 +153,7 @@ contract SwapAdapter is AccessControl {
 
         // Refund tokens
         if (vars.amountIn < amountInMax) {
-            IERC20(token).safeApprove(address(_swapRouter), 0);
-            IERC20(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
+            IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
         }
 
         // Return unspent fee to msg.sender
@@ -206,17 +213,17 @@ contract SwapAdapter is AccessControl {
         if (msg.value < vars.fee) revert MsgValueLowerThanFee(msg.value);
         // Convert everything except the fee
         vars.swapAmount = msg.value - vars.fee;
+        IWETH(_weth).deposit{value: vars.swapAmount}();
         vars.amountIn = swapTokens(
             pathTokens,
             pathFees,
             _weth,
             token,
             vars.swapAmount,
-            amountOut,
-            vars.swapAmount
+            amountOut
         );
-        IPeripheryPayments(address(_swapRouter)).refundETH();
 
+        IWETH(_weth).withdraw(IERC20(_weth).balanceOf(address(this)));
         vars.ERC20HandlerAddress = _bridge._resourceIDToHandlerAddress(vars.resourceID);
         IERC20(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
         _bridge.deposit{value: vars.fee}(destinationDomainID, vars.resourceID, vars.depositData, "");
@@ -286,7 +293,6 @@ contract SwapAdapter is AccessControl {
 
         // Swap tokens to ETH (exact output)
         IERC20(token).safeTransferFrom(msg.sender, address(this), amountInMax);
-        IERC20(token).safeApprove(address(_swapRouter), amountInMax);
 
         vars.amountIn = swapTokens(
             pathTokens,
@@ -294,16 +300,14 @@ contract SwapAdapter is AccessControl {
             token,
             _weth,
             amountInMax,
-            vars.totalAmountOut,
-            0
+            vars.totalAmountOut
         );
 
         IWETH(_weth).withdraw(vars.totalAmountOut);
 
         // Refund tokens
         if (vars.amountIn < amountInMax) {
-            IERC20(token).safeApprove(address(_swapRouter), 0);
-            IERC20(token).safeTransfer(msg.sender, amountInMax - vars.amountIn);
+            IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
         }
 
         // Make Native Token deposit
@@ -382,16 +386,16 @@ contract SwapAdapter is AccessControl {
         if (msg.value < vars.fee) revert MsgValueLowerThanFee(msg.value);
         // Convert everything except the fee
         vars.swapAmount = msg.value - vars.fee;
+        IWETH(_weth).deposit{value: vars.swapAmount}();
         vars.amountIn = swapTokens(
             pathTokens,
             pathFees,
             _weth,
             token,
             vars.swapAmount,
-            amountOut,
-            vars.swapAmount
+            amountOut
         );
-        IPeripheryPayments(address(_swapRouter)).refundETH();
+        IWETH(_weth).withdraw(IERC20(_weth).balanceOf(address(this)));
 
         vars.ERC20HandlerAddress = _bridge._resourceIDToHandlerAddress(vars.resourceID);
         IERC20(token).safeApprove(address(vars.ERC20HandlerAddress), amountOut);
@@ -411,23 +415,28 @@ contract SwapAdapter is AccessControl {
         address tokenIn,
         address tokenOut,
         uint256 amountInMaximum,
-        uint256 amountOut,
-        uint256 valueToSend
+        uint256 amountOut
     ) internal returns(uint256 amountIn) {
+        uint256 balanceBefore = IERC20(tokenIn).balanceOf(address(this));
         bytes memory path = _verifyAndEncodePath(
             pathTokens,
             pathFees,
             tokenIn,
             tokenOut
         );
-        IV3SwapRouter.ExactOutputParams memory params = IV3SwapRouter.ExactOutputParams({
-            path: path,
-            recipient: address(this),
-            amountOut: amountOut,
-            amountInMaximum: amountInMaximum
-        });
-
-        amountIn = _swapRouter.exactOutput{value: valueToSend}(params);
+        IPermit2(_permit2).approve(tokenIn, address(_swapRouter), uint160(amountInMaximum), uint48(block.timestamp));
+        bytes memory commands = abi.encodePacked(uint8(0x01)); // V3_SWAP_EXACT_OUT
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(
+            address(this), // The recipient of the output of the trade
+            amountOut, // The amount of output tokens to receive
+            amountInMaximum, // The maximum number of input tokens that should be spent
+            path, // The UniswapV3 encoded path to trade along
+            true // A flag for whether the input tokens should come from the msg.sender
+        );
+        _swapRouter.execute(commands, inputs, block.timestamp);
+        uint256 balanceAfter = IERC20(tokenIn).balanceOf(address(this));
+        amountIn = balanceBefore - balanceAfter;
         emit TokensSwapped(tokenIn, tokenOut, amountIn, amountOut);
     }
 

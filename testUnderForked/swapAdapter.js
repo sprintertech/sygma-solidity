@@ -20,7 +20,7 @@ const ERC20MintableContract = artifacts.require("ERC20PresetMinterPauser");
 contract("SwapAdapter", async (accounts) => {
   // Fee handler is mocked by BasicFeeHandler
   // deploy bridge, ERC20Handler, NativeTokenHandler, BasicFeeHandler, SwapAdapter
-  // use SwapRouter, USDC, WETH, user with USDC, user with ETH from mainnet fork
+  // use Uniswap UniversalRouter, Permit2, USDC, WETH, user with USDC from mainnet fork
   const recipientAddress = accounts[2];
   const fee = 1000;
   const depositorAddress = accounts[3];
@@ -32,7 +32,8 @@ contract("SwapAdapter", async (accounts) => {
   const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
   const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
   const USDC_OWNER_ADDRESS =  process.env.USDC_OWNER_ADDRESS;
-  const UNISWAP_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+  const UNIVERSAL_ROUTER_ADDRESS = "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD";
+  const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
   const resourceID_USDC = Helpers.createResourceID(
     USDC_ADDRESS,
     originDomainID
@@ -85,7 +86,8 @@ contract("SwapAdapter", async (accounts) => {
     SwapAdapterInstance = await SwapAdapterContract.new(
       BridgeInstance.address,
       WETH_ADDRESS,
-      UNISWAP_SWAP_ROUTER_ADDRESS,
+      UNIVERSAL_ROUTER_ADDRESS,
+      PERMIT2_ADDRESS,
       NativeTokenAdapterInstance.address
     );
     usdc = await ERC20MintableContract.at(USDC_ADDRESS);
@@ -178,6 +180,7 @@ contract("SwapAdapter", async (accounts) => {
     const balanceAfter = await usdc.balanceOf(USDC_OWNER_ADDRESS);
     expect(balanceAfter.toNumber()).to.eq(balanceBefore - amountIn);
     expect(balanceAfter.toNumber()).to.be.gt(balanceBefore - amountInMax);
+    expect(balanceAfter.toNumber()).to.eq(balanceBefore - amountIn);
 
     const depositData = await Helpers.createERCDepositData(amountOut, 20, recipientAddress);
 
@@ -218,8 +221,8 @@ contract("SwapAdapter", async (accounts) => {
     expect(await web3.eth.getBalance(BridgeInstance.address)).to.eq("0");
     expect(await web3.eth.getBalance(FeeHandlerRouterInstance.address)).to.eq("0");
     expect(await web3.eth.getBalance(ERC20HandlerInstance.address)).to.eq("0");
-    expect(await web3.eth.getBalance(UNISWAP_SWAP_ROUTER_ADDRESS)).to.eq("0");
-    expect((await weth.balanceOf(UNISWAP_SWAP_ROUTER_ADDRESS)).toNumber()).to.eq(0);
+    expect(await web3.eth.getBalance(UNIVERSAL_ROUTER_ADDRESS)).to.eq("0");
+    expect((await weth.balanceOf(UNIVERSAL_ROUTER_ADDRESS)).toNumber()).to.eq(0);
     expect((await weth.balanceOf(SwapAdapterInstance.address)).toNumber()).to.eq(0);
     expect((await usdc.balanceOf(ERC20HandlerInstance.address)).toString()).to.eq(amountOut.toString());
 
@@ -300,6 +303,7 @@ contract("SwapAdapter", async (accounts) => {
     const balanceAfter = await usdc.balanceOf(USDC_OWNER_ADDRESS);
     expect(balanceAfter.toNumber()).to.eq(balanceBefore - amountIn);
     expect(balanceAfter.toNumber()).to.be.gt(balanceBefore - amountInMax);
+    expect(balanceAfter.toNumber()).to.eq(balanceBefore - amountIn);
 
     const depositData = await Helpers.createOptionalContractCallDepositData(
       amountOut,
