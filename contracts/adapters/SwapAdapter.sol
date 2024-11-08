@@ -21,7 +21,7 @@ contract SwapAdapter is AccessControl {
 
     using SafeERC20 for IERC20;
 
-    uint8 V3_SWAP_EXACT_OUT = 1;
+    uint8 constant V3_SWAP_EXACT_OUT = 1;
 
     IBridge public immutable _bridge;
     address public immutable _weth;
