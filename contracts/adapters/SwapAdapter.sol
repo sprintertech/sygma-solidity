@@ -21,6 +21,8 @@ contract SwapAdapter is AccessControl {
 
     using SafeERC20 for IERC20;
 
+    uint8 V3_SWAP_EXACT_OUT = 1;
+
     IBridge public immutable _bridge;
     address public immutable _weth;
     IUniversalRouter public immutable _swapRouter;
@@ -425,7 +427,7 @@ contract SwapAdapter is AccessControl {
             tokenOut
         );
         IPermit2(_permit2).approve(tokenIn, address(_swapRouter), uint160(amountInMaximum), uint48(block.timestamp));
-        bytes memory commands = abi.encodePacked(uint8(0x01)); // V3_SWAP_EXACT_OUT
+        bytes memory commands = abi.encodePacked(V3_SWAP_EXACT_OUT); // V3_SWAP_EXACT_OUT
         bytes[] memory inputs = new bytes[](1);
         inputs[0] = abi.encode(
             address(this), // The recipient of the output of the trade
