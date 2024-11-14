@@ -27,6 +27,7 @@ contract SwapAdapter is AccessControl {
     address public immutable _weth;
     IUniversalRouter public immutable _swapRouter;
     INativeTokenAdapter public immutable _nativeTokenAdapter;
+    bytes32 public immutable _nativeResourceID;
     IPermit2 public immutable _permit2;
 
     mapping(address => bytes32) public tokenToResourceID;
@@ -76,6 +77,7 @@ contract SwapAdapter is AccessControl {
         _swapRouter = swapRouter;
         _permit2 = permit2;
         _nativeTokenAdapter = nativeTokenAdapter;
+        _nativeResourceID = nativeTokenAdapter._resourceID();
         IERC20(_weth).approve(address(_permit2), type(uint256).max);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -115,8 +117,7 @@ contract SwapAdapter is AccessControl {
         uint24[] calldata pathFees
     ) external {
         LocalVars memory vars;
-        vars.resourceID = tokenToResourceID[token];
-        if (vars.resourceID == bytes32(0)) revert TokenInvalid();
+        vars.resourceID = _nativeResourceID;
 
         // Compose depositData
         vars.depositDataAfterAmount = abi.encodePacked(
