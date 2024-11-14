@@ -7,6 +7,8 @@ pragma solidity 0.8.11;
     @author ChainSafe Systems.
  */
 interface INativeTokenAdapter {
+     function _resourceID() external view returns(bytes32);
+
      function depositToEVM(
         uint8 destinationDomainID,
         address recipientAddress
