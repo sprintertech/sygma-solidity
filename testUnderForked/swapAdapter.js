@@ -481,21 +481,23 @@ contract("SwapAdapter", async (accounts) => {
   });
 
   it("should fail if the resource id is not configured", async () => {
-    const pathTokens = [WETH_ADDRESS, USDC_ADDRESS];
+    const pathTokens = [USDC_ADDRESS, ];
     const pathFees = [500];
-    const amount = 1000000;
-    const amountOutMinimum = Ethers.utils.parseUnits("200000", "gwei");
+    const amount = Ethers.utils.parseUnits("200000", "gwei");
+    const amountOutMinimum = 1000000;
     await usdc.approve(SwapAdapterInstance.address, amount, {from: USDC_OWNER_ADDRESS});
     await Helpers.expectToRevertWithCustomError(
-      SwapAdapterInstance.depositTokensToEth.call(
+      SwapAdapterInstance.depositEthToTokens.call(
         destinationDomainID,
         recipientAddress,
         USDC_ADDRESS,
-        amount,
         amountOutMinimum,
         pathTokens,
         pathFees,
-        {from: USDC_OWNER_ADDRESS}
+        {
+          from: USDC_OWNER_ADDRESS,
+          value: amount
+        }
       ),
       "TokenInvalid()"
     );
