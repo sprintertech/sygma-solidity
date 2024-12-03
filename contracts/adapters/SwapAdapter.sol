@@ -437,6 +437,7 @@ contract SwapAdapter is AccessControl {
             true // A flag for whether the input tokens should come from the msg.sender
         );
         _swapRouter.execute(commands, inputs, block.timestamp);
+        IERC20(tokenIn).approve(address(_permit2), 0);
         uint256 balanceAfter = IERC20(tokenIn).balanceOf(address(this));
         amountIn = balanceBefore - balanceAfter;
         emit TokensSwapped(tokenIn, tokenOut, amountIn, amountOut);
