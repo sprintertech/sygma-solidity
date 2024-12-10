@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.CR_WRITE_PAT }}
 
       - name: Push docker image to GitHub Packages
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           tags: ghcr.io/${{ github.repository }}:evm1-${{ github.ref_name }}
@@ -50,7 +50,7 @@ jobs:
         run: yarn run deploy:local:2
 
       - name: Push docker image to GitHub Packages
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           tags: ghcr.io/${{ github.repository }}:evm2-${{ github.ref_name }}
