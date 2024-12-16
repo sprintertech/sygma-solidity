@@ -1,3 +1,4 @@
+
 // The Licensed Work is (c) 2022 Sygma
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity 0.8.11;
@@ -57,7 +58,7 @@ contract TwapOracle is AccessControl {
         int24 arithmeticMeanTick = int24(tickCumulativesDelta / int56(uint56(secondsAgo)));
         // Always round to negative infinity
         if (tickCumulativesDelta < 0 && (tickCumulativesDelta % int56(uint56(secondsAgo)) != 0)) arithmeticMeanTick--;
-        
+
         uint160 sqrtRatioX96 = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
 
         // Calculate quoteAmount with better precision if it doesn't overflow when multiplied by itself

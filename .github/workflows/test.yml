@@ -25,23 +25,24 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: make install-deps
+        run: yarn install
       - name: Compile contracts
-        run: make compile
+        run: yarn run compile
       - name: Store contract artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: contracts-artifacts
-          path: build
-      - name: Ganache Tests
+          name: cotracts-artifacts
+          path: artifacts
+      - name: Run Tests
         run: |
           SILENT=true make start-ganache
-          make test
+          npx hardhat node
+          yarn run test
       - name: Forked Mainnet Tests
         run: |
           fuser -k 8545/tcp
-          make start-forkedMainnet FORKED_TESTS_PROVIDER=${{ secrets.FORKED_TESTS_PROVIDER }}
-          make test-forked
+          yarn run node-fork FORKED_TESTS_PROVIDER=${{ secrets.FORKED_TESTS_PROVIDER }}
+          yarn run test-fork
 
   coverage:
     needs: test
@@ -61,6 +62,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: contracts-artifacts
-          path: build
+          path: artifacts
       - name: Yarn install
         run: yarn install --frozen-lockfile
