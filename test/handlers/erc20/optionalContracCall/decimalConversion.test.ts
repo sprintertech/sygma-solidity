@@ -56,7 +56,7 @@ describe("Bridge - [decimal conversion - erc20 token]", () => {
   let message: Hex;
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 import hre from 'hardhat';
-import {encodeAbiParameters, encodeFunctionData, Hex, keccak256, parseAbiParameters, parseEther, parseUnits, toFunctionSelector, toHex, WalletClient, zeroAddress} from "viem";
-import {createGmpDepositData, createMessageCallData, createOptionalContractCallDepositData, createResourceID, deploySourceChainContracts, mpcAddress} from "../../../helpers";
+import {encodeFunctionData, formatEther, Hex, parseEther, WalletClient, zeroAddress} from "viem";
+import {createMessageCallData, createOptionalContractCallDepositData, deploySourceChainContracts, getBalance, mpcAddress} from "../../../helpers";
 import {ContractTypesMap} from 'hardhat/types';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {assert, expect} from 'chai';
 
 describe("Bridge - [collect fee - native token]", () => {
-  const originDomainID = 1;
   const destinationDomainID = 2;
 
-  const expectedDepositNonce = 1;
   const emptySetResourceData = "0x";
   const resourceID = "0x0000000000000000000000000000000000000000000000000000000000000650";
   const depositAmount = parseEther("1");
@@ -33,9 +31,9 @@ describe("Bridge - [collect fee - native token]", () => {
   let evmRecipient: WalletClient;
 
   let message: Hex;
-  let depositProposalData: Hex
+  let depositProposalData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,
@@ -100,8 +98,8 @@ describe("Bridge - [collect fee - native token]", () => {
 
   it("Native token fee should be successfully deducted", async () => {
     const depositorBalanceBefore = await getBalance(depositor);
-    const adapterBalanceBefore = await getBalance(NativeTokenTransferGatewayInstance.address);
-    const handlerBalanceBefore = await getBalance(NativeTokenHandlerInstance.address);
+    const adapterBalanceBefore = await getBalance(NativeTokenTransferGatewayInstance);
+    const handlerBalanceBefore = await getBalance(NativeTokenHandlerInstance);
 
     await expect(
       NativeTokenTransferGatewayInstance.write.depositToEVMWithMessage([
@@ -116,8 +114,8 @@ describe("Bridge - [collect fee - native token]", () => {
       )).not.to.be.reverted;
 
     // check that correct ETH amount is successfully transferred to the adapter
-    const adapterBalanceAfter = await getBalance(NativeTokenTransferGatewayInstance.address);
-    const handlerBalanceAfter = await getBalance(NativeTokenHandlerInstance.address);
+    const adapterBalanceAfter = await getBalance(NativeTokenTransferGatewayInstance);
+    const handlerBalanceAfter = await getBalance(NativeTokenHandlerInstance);
     assert.strictEqual(
       transferredAmount + handlerBalanceBefore, handlerBalanceAfter
     );

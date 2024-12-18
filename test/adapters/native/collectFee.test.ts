@@ -3,14 +3,13 @@
 
 import hre from "hardhat";
 import {assert, expect} from "chai";
-import {parseEther, formatEther, WalletClient, toHex} from "viem";
+import {parseEther, WalletClient, toHex} from "viem";
 import {deploySourceChainContracts, getBalance, mpcAddress} from "../../helpers";
 import {ContractTypesMap} from "hardhat/types";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 
 
 describe("Bridge - [collect fee - native token]", () => {
-  const originDomainID = 1;
   const destinationDomainID = 2;
 
   const emptySetResourceData = "0x";
@@ -21,7 +20,6 @@ describe("Bridge - [collect fee - native token]", () => {
   const transferredAmount = depositAmount - fee;
 
   let BridgeInstance: ContractTypesMap["Bridge"];
-  let DefaultMessageReceiverInstance: ContractTypesMap["DefaultMessageReceiver"];
   let NativeTokenHandlerInstance: ContractTypesMap["NativeTokenHandler"];
   let BasicFeeHandlerInstance: ContractTypesMap["BasicFeeHandler"];
   let FeeHandlerRouterInstance: ContractTypesMap["FeeHandlerRouter"];
@@ -29,9 +27,8 @@ describe("Bridge - [collect fee - native token]", () => {
 
   let depositor: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
-      DefaultMessageReceiverInstance,
       BridgeInstance,
       NativeTokenHandlerInstance,
       BasicFeeHandlerInstance,
@@ -63,8 +60,8 @@ describe("Bridge - [collect fee - native token]", () => {
 
   it("Native token fee should be successfully deducted", async () => {
     const depositorBalanceBefore = await getBalance(depositor);
-    const adapterBalanceBefore = await getBalance(NativeTokenTransferGatewayInstance.address);
-    const handlerBalanceBefore = await getBalance(NativeTokenHandlerInstance.address);
+    const adapterBalanceBefore = await getBalance(NativeTokenTransferGatewayInstance);
+    const handlerBalanceBefore = await getBalance(NativeTokenHandlerInstance);
 
     await expect(
       NativeTokenTransferGatewayInstance.write.deposit([
@@ -78,8 +75,13 @@ describe("Bridge - [collect fee - native token]", () => {
       )).not.to.be.reverted;
 
     // check that correct ETH amount is successfully transferred to the adapter
-    const adapterBalanceAfter = await getBalance(NativeTokenTransferGatewayInstance.address);
-    const handlerBalanceAfter = await getBalance(NativeTokenHandlerInstance.address);
+    const adapterBalanceAfter = await getBalance(NativeTokenTransferGatewayInstance);
+    const handlerBalanceAfter = await getBalance(NativeTokenHandlerInstance);
+    console.log("123-1", transferredAmount)
+    console.log("123-2", handlerBalanceBefore)
+    console.log("123-3", handlerBalanceAfter)
+    console.log("123-4", adapterBalanceBefore)
+    console.log("123-5", adapterBalanceAfter)
     assert.strictEqual(
       transferredAmount + handlerBalanceBefore, handlerBalanceAfter
     );
@@ -95,8 +97,8 @@ describe("Bridge - [collect fee - native token]", () => {
     expect(
       depositorBalanceBefore - depositAmount
     ).to.be.within(
-      depositorBalanceAfter*0.99,
-      depositorBalanceAfter*1.01
+      depositorBalanceAfter*BigInt(0.99),
+      depositorBalanceAfter*BigInt(1.01)
     )
   });
 });

@@ -38,7 +38,7 @@ describe("Native token adapter - [distributeFee]", () => {
   let depositProposalData: Hex
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

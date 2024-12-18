@@ -21,7 +21,7 @@ describe("XC20Handler - [constructor]", () => {
   let initialResourceIDs: Array<Hex>;
   let initialContractAddresses: Array<Hex>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance: ERC20MintableInstance1,

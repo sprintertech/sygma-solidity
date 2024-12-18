@@ -14,7 +14,7 @@ describe("FROSTKeygen", () => {
     let admin: WalletClient;
     let nonadmin: WalletClient;
 
-    before(async () => {
+    beforeEach(async () => {
       ({
         FROSTKeygenInstance,
       } = await loadFixture(deploySourceChainContracts));

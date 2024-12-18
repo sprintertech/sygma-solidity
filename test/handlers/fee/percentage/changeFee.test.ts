@@ -26,7 +26,7 @@ describe("PercentageFeeHandler - [change fee and bounds]", () => {
   let admin: WalletClient;
   let nonAdmin: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       PercentageFeeHandlerInstance,

@@ -25,7 +25,7 @@ describe("AccessControlSegregator - [constructor]", () => {
 
   const grantAccessSig = "0xa973ec93";
 
-  before(async () => {
+  beforeEach(async () => {
     AccessControlSegregatorInstance = await hre.viem.deployContract("AccessControlSegregator", [[],[]]);
       [
         ,

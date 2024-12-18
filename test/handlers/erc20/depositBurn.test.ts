@@ -28,7 +28,7 @@ describe("ERC20Handler - [Deposit Burn ERC20]", () => {
   let initialContractAddresses: Array<Hex>;
   let burnableContractAddresses: Array<Hex>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20HandlerInstance,

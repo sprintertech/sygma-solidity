@@ -25,7 +25,7 @@ describe("DefaultMessageReceiver - direct interaction", () => {
 
   let SYGMA_HANDLER_ROLE: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       ERC20MintableInstance,

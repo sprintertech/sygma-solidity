@@ -33,7 +33,7 @@ describe("ERC721Handler - [Deposit ERC721]", () => {
   let proposalData: Hex;
 
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC721HandlerInstance,

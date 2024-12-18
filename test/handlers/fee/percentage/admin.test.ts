@@ -26,7 +26,7 @@ describe("PercentageFeeHandler - [admin]", () => {
   let feeHandlerAdmin: WalletClient;
   let newFeeHandlerAdmin: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       PercentageFeeHandlerInstance,

@@ -33,7 +33,7 @@ describe("ERC721Handler - [Deposit Burn ERC721]", () => {
   let recipient: WalletClient;
   let nonTokenOwner: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC721HandlerInstance,

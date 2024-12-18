@@ -34,7 +34,7 @@ describe("Bridge - [execute proposal - ERC20]", () => {
   let dataHash = "";
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20HandlerInstance,

@@ -25,7 +25,7 @@ describe("XC20Handler - [Burn XC20]", () => {
 
   let mockBridge: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       XC20HandlerInstance,

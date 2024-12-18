@@ -32,7 +32,7 @@ describe("XC20Handler - [Deposit Burn XC20]", () => {
   let depositData: Hex;
   let burnableContractAddresses: Array<Hex>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       XC20HandlerInstance,

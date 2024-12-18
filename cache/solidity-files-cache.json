@@ -2378,8 +2378,8 @@
       ]
     },
     "/home/nikola/git/sygma-solidity/contracts/handlers/fee/dynamic/TwapOracle.sol": {
-      "lastModificationDate": 1727172990068,
-      "contentHash": "cb3a55c3e4553b1843f781c6311a8820",
+      "lastModificationDate": 1734360604793,
+      "contentHash": "da0815da222d57d77c365a8d55cfc0de",
       "sourceName": "contracts/handlers/fee/dynamic/TwapOracle.sol",
       "solcConfig": {
         "version": "0.8.11",
@@ -3262,8 +3262,8 @@
       ]
     },
     "/home/nikola/git/sygma-solidity/contracts/handlers/NativeTokenHandler.sol": {
-      "lastModificationDate": 1729003333302,
-      "contentHash": "932f247a800cb1e3d41a373684b2d9a8",
+      "lastModificationDate": 1734360925264,
+      "contentHash": "09f04186f1b4b1661ccbf0e3aac29d89",
       "sourceName": "contracts/handlers/NativeTokenHandler.sol",
       "solcConfig": {
         "version": "0.8.11",
@@ -3578,8 +3578,8 @@
       ]
     },
     "/home/nikola/git/sygma-solidity/contracts/NativeTokenTransferGateway.sol": {
-      "lastModificationDate": 1734356537617,
-      "contentHash": "42a7087c24cb31223b505c3dad0e0ada",
+      "lastModificationDate": 1734360925256,
+      "contentHash": "10e244cae0b71d85e50dbe94b1def14b",
       "sourceName": "contracts/NativeTokenTransferGateway.sol",
       "solcConfig": {
         "version": "0.8.11",
@@ -3612,7 +3612,7 @@
         "^0.8.11"
       ],
       "artifacts": [
-        "NativeTokenAdapter"
+        "NativeTokenTransferGateway"
       ]
     }
   }

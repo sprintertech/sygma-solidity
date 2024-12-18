@@ -65,7 +65,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
 
   let proposalsForExecution: Array<Proposal>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

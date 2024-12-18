@@ -32,7 +32,7 @@ describe("ERC1155Handler - [Deposit Burn ERC1155]", () => {
   let depositData: Hex;
   let burnableContractAddresses: Array<Hex>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC1155HandlerInstance,

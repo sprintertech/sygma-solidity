@@ -13,9 +13,13 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
-const UNISWAP_V3_FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+export const UNISWAP_V3_FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984" as Hex;
+export const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" as Hex;
+export const MATIC_ADDRESS = "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0" as Hex;
+export const BNB_ADDRESS = "0xB8c77482e45F1F44dE1745F52C74426C631bDD52";
 
+export const recoverGas = BigInt(100000);
+export const gasUsed = 100000;
 export const blankFunctionSig = "0x00000000" as unknown as Hex;
 export const blankFunctionDepositorOffset = "0x0000" as unknown as Hex;
 export const mpcAddress = "0x1Ad4b1efE3Bc6FEE085e995FCF48219430e615C3" as unknown as Hex;
@@ -27,8 +31,6 @@ const accessControlFuncSignatures = generateAccessControlFuncSignatures();
 
 export async function deploySourceChainContracts() {
   const [authorizedAddress] = await hre.viem.getWalletClients();
-  const recoverGas = BigInt(100000);
-  const gasUsed = 100000;
   const domainID = 1
   const resourceID = toHex(650, {size:32});
 
@@ -38,7 +40,7 @@ export async function deploySourceChainContracts() {
   ]);
   const DefaultMessageReceiverInstance = await hre.viem.deployContract("DefaultMessageReceiver", [[], recoverGas]);
   const BridgeInstance = await hre.viem.deployContract("Bridge", [domainID, AccessControlSegregatorInstance.address]);
-  const NativeTokenAdapterInstance = await hre.viem.deployContract("NativeTokenTransferGateway", [BridgeInstance.address, resourceID]);
+  const NativeTokenTransferGatewayInstance = await hre.viem.deployContract("NativeTokenTransferGateway", [BridgeInstance.address, resourceID]);
   const ERC20MintableInstance = await hre.viem.deployContract("ERC20PresetMinterPauser", ["Token", "TOK"]);
   const ERC20HandlerInstance = await hre.viem.deployContract("ERC20Handler", [BridgeInstance.address, DefaultMessageReceiverInstance.address]);
   const ERC1155MintableInstance = await hre.viem.deployContract("ERC1155PresetMinterPauser", ["TOK"]);
@@ -52,7 +54,7 @@ export async function deploySourceChainContracts() {
   const TwapOracleInstance = await hre.viem.deployContract("TwapOracle", [UNISWAP_V3_FACTORY_ADDRESS, WETH_ADDRESS]);
   const TwapGenericFeeHandlerInstance = await hre.viem.deployContract("TwapGenericFeeHandler", [BridgeInstance.address, FeeHandlerRouterInstance.address]);
   const GmpHandlerInstance = await hre.viem.deployContract("GmpHandler", [BridgeInstance.address]);
-  const NativeTokenHandlerInstance = await hre.viem.deployContract("NativeTokenHandler", [BridgeInstance.address, NativeTokenAdapterInstance.address, DefaultMessageReceiverInstance.address]);
+  const NativeTokenHandlerInstance = await hre.viem.deployContract("NativeTokenHandler", [BridgeInstance.address, NativeTokenTransferGatewayInstance.address, DefaultMessageReceiverInstance.address]);
   const TestStoreInstance = await hre.viem.deployContract("TestStore");
   const TestDepositInstance = await hre.viem.deployContract("TestDeposit");
   const XC20TestInstance = await hre.viem.deployContract("XC20Test");
@@ -69,7 +71,7 @@ export async function deploySourceChainContracts() {
   return {
     DefaultMessageReceiverInstance,
     BridgeInstance,
-    NativeTokenAdapterInstance,
+    NativeTokenTransferGatewayInstance,
     ERC20MintableInstance,
     ERC20HandlerInstance,
     ERC1155MintableInstance,
@@ -111,7 +113,7 @@ export async function deployDestinationChainContracts(hre: HardhatRuntimeEnviron
   ]);
   const DefaultMessageReceiverInstance = await hre.viem.deployContract("DefaultMessageReceiver", [[], recoverGas]);
   const BridgeInstance = await hre.viem.deployContract("Bridge", [domainID, AccessControlSegregatorInstance.address]);
-  const NativeTokenAdapterInstance = await hre.viem.deployContract("NativeTokenTransferGateway", [BridgeInstance.address, resourceID]);
+  const NativeTokenTransferGatewayInstance = await hre.viem.deployContract("NativeTokenTransferGateway", [BridgeInstance.address, resourceID]);
   const ERC20MintableInstance = await hre.viem.deployContract("ERC20PresetMinterPauser", ["Token", "TOK"]);
   const ERC20HandlerInstance = await hre.viem.deployContract("ERC20Handler", [BridgeInstance.address, DefaultMessageReceiverInstance.address]);
   const ERC1155MintableInstance = await hre.viem.deployContract("ERC1155PresetMinterPauser", ["TOK"]);
@@ -125,7 +127,7 @@ export async function deployDestinationChainContracts(hre: HardhatRuntimeEnviron
   const TwapOracleInstance = await hre.viem.deployContract("TwapOracle", [UNISWAP_V3_FACTORY_ADDRESS, WETH_ADDRESS]);
   const TwapGenericFeeHandlerInstance = await hre.viem.deployContract("TwapGenericFeeHandler", [BridgeInstance.address, FeeHandlerRouterInstance.address]);
   const GmpHandlerInstance = await hre.viem.deployContract("GmpHandler", [BridgeInstance.address]);
-  const NativeTokenHandlerInstance = await hre.viem.deployContract("NativeTokenHandler", [BridgeInstance.address, NativeTokenAdapterInstance.address, DefaultMessageReceiverInstance.address]);
+  const NativeTokenHandlerInstance = await hre.viem.deployContract("NativeTokenHandler", [BridgeInstance.address, NativeTokenTransferGatewayInstance.address, DefaultMessageReceiverInstance.address]);
   const TestStoreInstance = await hre.viem.deployContract("TestStore");
   const TestDepositInstance = await hre.viem.deployContract("TestDeposit");
   const XC20TestInstance = await hre.viem.deployContract("XC20Test");
@@ -142,7 +144,7 @@ export async function deployDestinationChainContracts(hre: HardhatRuntimeEnviron
   return {
     DefaultMessageReceiverInstance,
     BridgeInstance,
-    NativeTokenAdapterInstance,
+    NativeTokenTransferGatewayInstance,
     ERC20MintableInstance,
     ERC20HandlerInstance,
     ERC1155MintableInstance,
@@ -454,7 +456,6 @@ export function createOptionalContractCallDepositData(
 }
 
 export async function getBalance(args: GetBalanceParameters | WalletClient): Promise<bigint>{
-  console.log("sfasfsaf",typeof args)
   if(args.hasOwnProperty("account")){
     const wallet = args as WalletClient;
     return await publicClient.getBalance({address: wallet.account!.address });

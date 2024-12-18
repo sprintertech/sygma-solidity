@@ -43,7 +43,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   let dataHash: Hex;
   let message: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

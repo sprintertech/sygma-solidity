@@ -29,7 +29,7 @@ describe("BasicFeeHandler - [calculateFee]", () => {
   let resourceID: Hex;
   let depositData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       BasicFeeHandlerInstance,

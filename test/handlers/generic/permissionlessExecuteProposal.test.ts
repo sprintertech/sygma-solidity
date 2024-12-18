@@ -35,7 +35,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
     let depositData: Hex;
     let proposal: Proposal;
 
-    before(async () => {
+    beforeEach(async () => {
       ({
         BridgeInstance,
         TestStoreInstance,

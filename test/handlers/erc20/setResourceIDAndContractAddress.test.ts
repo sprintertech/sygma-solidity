@@ -22,7 +22,7 @@ describe("ERC20Handler - [setResourceIDAndContractAddress]", () => {
 
     let resourceID1: Hex;
 
-    before(async () => {
+    beforeEach(async () => {
       ({
         DefaultMessageReceiverInstance,
         BridgeInstance,

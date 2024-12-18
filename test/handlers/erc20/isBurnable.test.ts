@@ -23,7 +23,7 @@ describe("ERC20Handler - [Burn ERC20]", () => {
   let initialContractAddresses: Array<Hex>;
   let burnableContractAddresses: Array<Hex>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance: ERC20MintableInstance1,

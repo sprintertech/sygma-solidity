@@ -1,9 +1,11 @@
 // The Licensed Work is (c) 2022 Sygma
 // SPDX-License-Identifier: LGPL-3.0-only
+
+
 import hre from "hardhat";
 import { assert, expect } from "chai";
-import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import { WalletClient, Address, Hex, toHex, zeroAddress, pad, testActions, walletActions, publicActions } from "viem";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { WalletClient, Address, Hex, zeroAddress, toHex} from "viem";
 import { ContractTypesMap } from "hardhat/types";
 import {blankFunctionDepositorOffset, blankFunctionSig, constructGenericHandlerSetResourceData, createERCWithdrawData, createMessageCallData, createResourceID, deployDestinationChainContracts, deploySourceChainContracts, mpcAddress} from '../helpers';
 
@@ -13,17 +15,12 @@ describe("Bridge - [admin]", () => {
   const domainID = 1;
 
   const someAddress: Address = "0xcafecafecafecafecafecafecafecafecafecafe";
-  const nullAddress: Address = "0x0000000000000000000000000000000000000000";
   const topologyHash = "549f715f5b06809ada23145c2dc548db";
   const txHash =
     "0x59d881e01ca682130e550e3576b6de760951fb45b1d5dd81342132f57920bbfa";
-
-  const bytes32 = "0x0";
   const emptySetResourceData = "0x";
   const depositAmount = BigInt(10);
 
-  let authorizedAddress: WalletClient;
-  let nonadmin: WalletClient;
   let DefaultMessageReceiverInstance: ContractTypesMap["DefaultMessageReceiver"];
   let BridgeInstance: ContractTypesMap["Bridge"];
   let ERC20MintableInstance: ContractTypesMap["ERC20PresetMinterPauser"];
@@ -32,14 +29,14 @@ describe("Bridge - [admin]", () => {
   let ERC1155HandlerInstance: ContractTypesMap["ERC1155Handler"];
   let ERC721MintableInstance: ContractTypesMap["ERC721MinterBurnerPauser"];
   let ERC721HandlerInstance: ContractTypesMap["ERC721Handler"];
+
+  let authorizedAddress: WalletClient;
+  let nonadmin: WalletClient;
+
   let genericHandlerSetResourceData: Hex;
   let withdrawData: Hex;
 
-  const assertOnlyAdmin = async (contract: any, methodCall: unknown) => {
-    await expect(methodCall).to.be.revertedWithCustomError(contract,"AccessNotAllowed(address,bytes4)")
-  };
-
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,
@@ -122,7 +119,7 @@ describe("Bridge - [admin]", () => {
 
   it("Should fail if null address is passed as MPC address", async () => {
     await expect(
-      BridgeInstance.write.endKeygen([nullAddress])
+      BridgeInstance.write.endKeygen([zeroAddress])
     ).to.be.revertedWithCustomError(BridgeInstance, "MPCAddressZeroAddress()");
   });
 
@@ -216,7 +213,7 @@ describe("Bridge - [admin]", () => {
       BridgeInstance.write.adminSetResource(
         [
           someAddress,
-          bytes32,
+          toHex(0, {size: 32}),
           someAddress,
           genericHandlerSetResourceData,
         ],
@@ -410,8 +407,9 @@ describe("Bridge - [admin]", () => {
     const currentNonce = BigInt(3);
     await BridgeInstance.write.adminSetDepositNonce([domainID, currentNonce]);
     const newNonce = BigInt(2);
+
     await expect(
-      BridgeInstance.write.adminSetDepositNonce([domainID, newNonce]),
+      BridgeInstance.write.adminSetDepositNonce([domainID, newNonce])
     ).to.be.revertedWith("Does not allow decrements of the nonce");
   });
 

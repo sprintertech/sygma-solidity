@@ -31,7 +31,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
   let resourceID1: Hex;
   let resourceID2: Hex
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       XC20TestInstance,
       BridgeInstance,
@@ -262,7 +262,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
   });
 
   describe("mint/burn strategy", async () => {
-    before(async () => {
+    beforeEach(async () => {
       await BridgeInstance.write.adminSetBurnable([
         XC20HandlerInstance.address,
         XC20TestInstance.address

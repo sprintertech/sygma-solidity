@@ -26,7 +26,7 @@ describe("BasicFeeHandler - [admin]", () => {
   let ADMIN_ROLE: Hex;
   let resourceID: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       BasicFeeHandlerInstance,

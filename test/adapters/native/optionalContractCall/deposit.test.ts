@@ -39,7 +39,7 @@ describe("Bridge - [deposit - native token]", () => {
   let message: Hex;
 
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

@@ -20,7 +20,7 @@ describe("Retry", () => {
     const blockHeight = BigInt(15);
     const resourceID = "0x0000000000000000000000000000000000000000000000000000000000000300";
 
-    before(async () => {
+    beforeEach(async () => {
       ({
         RetryInstance,
       } = await loadFixture(deploySourceChainContracts));

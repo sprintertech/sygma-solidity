@@ -37,7 +37,7 @@ describe("BasicFeeHandler - [collectFee]", () => {
   let erc20depositData: Hex;
   let erc721depositData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

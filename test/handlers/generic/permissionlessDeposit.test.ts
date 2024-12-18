@@ -30,7 +30,7 @@ describe("GmpHandler - [deposit]", () => {
   let depositFunctionSignature: Hex;
   let depositData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       TestStoreInstance,

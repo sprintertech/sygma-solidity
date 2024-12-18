@@ -31,7 +31,7 @@ describe("BasicFeeHandler - [distributeFee]", () => {
   let depositor: WalletClient;
   let recipient: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

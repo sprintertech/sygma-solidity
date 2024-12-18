@@ -33,7 +33,7 @@ describe("Bridge - [deposit - native token]", () => {
   let depositor: WalletClient;
   let invalidAdapterMock: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

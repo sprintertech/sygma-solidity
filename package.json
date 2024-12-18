@@ -25,8 +25,8 @@
     "compile": "npx hardhat compile",
     "node": "npx hardhat node",
     "node-fork": "npx hardhat node --fork",
-    "test": "npx hardhat test ./test/forwarder/forwarder.test.ts",
-    "test-fork": "npx hardhat test ./forkedMainnet/**/*.test.ts",
+    "test": "npx hardhat test",
+    "test-fork": "npx hardhat test ./testForkedMainnet/*",
     "publish-package": "npm run compile && npm run generate-types && npm run build && npm publish",
     "lint": "npm run lint-solidity && npm run lint-js",
     "lint-solidity": "npx hardhat check",
@@ -35,19 +35,19 @@
   "author": "Sygma",
   "license": "BUSL-1.1",
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
     "@nomicfoundation/hardhat-ignition": "^0.15.0",
     "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
     "@nomicfoundation/hardhat-viem": "^2.0.5",
     "@nomiclabs/hardhat-solhint": "^4.0.1",
-    "@types/chai": "^4.2.0",
+    "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^7.1.6",
     "@types/mocha": "^10.0.8",
     "@types/node": ">=18.0.0",
-    "chai": "^4.x.x",
-    "dotenv": "^16.0.2",
+    "chai": "4.2.0",
+    "dotenv": "^16.4.7",
     "env-prompt": "^2.0.3",
     "eslint": "^8.0.1",
     "eslint-config-standard": "^17.0.0",
@@ -62,10 +62,7 @@
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typescript": "5.0.3",
-    "viem": "^2.21.37"
-  },
-  "overrides": {
-    "ethers": "6.13.x"
+    "viem": "^2.13.7"
   },
   "dependencies": {
     "@metamask/eth-sig-util": "^8.1.1",

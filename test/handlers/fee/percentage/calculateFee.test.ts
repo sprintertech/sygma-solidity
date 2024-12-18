@@ -27,7 +27,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
   let relayer: WalletClient;
   let recipient: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       PercentageFeeHandlerInstance,

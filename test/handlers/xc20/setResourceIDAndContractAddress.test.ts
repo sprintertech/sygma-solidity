@@ -22,7 +22,7 @@ describe("XC20Handler - [setResourceIDAndContractAddress]", () => {
 
     let resourceID: Hex;
 
-    before(async () => {
+    beforeEach(async () => {
       ({
         BridgeInstance,
         XC20HandlerInstance: XC20HandlerInstance1,

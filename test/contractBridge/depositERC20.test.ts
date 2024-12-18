@@ -8,7 +8,6 @@ import {ContractTypesMap} from "hardhat/types";
 import {Hex, WalletClient} from "viem";
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 
-const Helpers = require("../helpers");
 
 describe("Bridge - [deposit - ERC20]", async () => {
   const originDomainID = 1;
@@ -35,7 +34,7 @@ describe("Bridge - [deposit - ERC20]", async () => {
   let recipient: WalletClient;
 
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20HandlerInstance,
@@ -104,7 +103,7 @@ describe("Bridge - [deposit - ERC20]", async () => {
 
   it("[sanity] test depositor' balance", async () => {
     const originChainDepositorBalance =
-      await ERC20MintableInstance.read.balanceOf(depositor.account!.address);
+      await ERC20MintableInstance.read.balanceOf([depositor.account!.address]);
     assert.strictEqual(
       originChainDepositorBalance,
       originChainInitialTokenAmount

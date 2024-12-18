@@ -73,7 +73,7 @@ describe("Forwarder", () => {
     data: Hex,
   };
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       ForwarderInstance,
       TestTargetInstance,

@@ -40,7 +40,7 @@ describe("Bridge - [collect fee - erc20 token]", () => {
   let message: Hex;
   let depositProposalData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

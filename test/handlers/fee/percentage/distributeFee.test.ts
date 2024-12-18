@@ -36,7 +36,7 @@ describe("PercentageFeeHandler - [distributeFee]", () => {
   let resourceID: Hex;
   let depositData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

@@ -45,7 +45,7 @@ describe("Bridge - [decimal conversion - native token]", () => {
   let depositProposalData: Hex;
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

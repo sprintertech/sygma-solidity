@@ -41,7 +41,7 @@ describe("Bridge - [deposit - erc20 token with contract call]", () => {
   let depositProposalData: Hex;
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
       ({
         DefaultMessageReceiverInstance,
         BridgeInstance,

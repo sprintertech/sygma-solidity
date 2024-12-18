@@ -35,7 +35,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
   let dataHash: Hex;
   let proposal: Proposal;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       XC20TestInstance,
       BridgeInstance,
@@ -297,7 +297,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
   });
 
   describe("mint/burn strategy", async () => {
-    before(async () => {
+    beforeEach(async () => {
       await BridgeInstance.write.adminSetBurnable([
         XC20HandlerInstance.address,
         XC20TestInstance.address

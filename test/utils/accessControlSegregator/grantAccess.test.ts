@@ -16,7 +16,7 @@ describe("AccessControlSegregator - [grant access]", () => {
 
   const functionSignature = "0x29a71964";
 
-  before(async () => {
+  beforeEach(async () => {
     AccessControlSegregatorInstance = await hre.viem.deployContract("AccessControlSegregator", [[],[]]);
     [
       ,

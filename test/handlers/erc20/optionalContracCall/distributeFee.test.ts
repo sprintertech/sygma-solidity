@@ -44,7 +44,7 @@ describe("PercentageFeeHandler - [distributeFee]", () => {
   let proposal: Proposal;
   let resourceID: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

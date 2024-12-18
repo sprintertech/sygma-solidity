@@ -20,7 +20,7 @@ describe("ERC20Handler - [isWhitelisted]", () => {
 
   let resourceID: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

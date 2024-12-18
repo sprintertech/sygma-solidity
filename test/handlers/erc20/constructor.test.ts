@@ -23,7 +23,7 @@ describe("ERC20Handler - [constructor]", async () => {
   let mockBridge: WalletClient;
   let mockDefaultMessageReceiver: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

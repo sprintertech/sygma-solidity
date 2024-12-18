@@ -50,7 +50,7 @@ describe("Bridge - [execute proposals]", () => {
 
   let proposalsForExecution: Array<Proposal>;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,

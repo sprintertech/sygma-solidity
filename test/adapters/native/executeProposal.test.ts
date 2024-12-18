@@ -35,7 +35,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   let depositProposalData;
   let dataHash: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       NativeTokenHandlerInstance,

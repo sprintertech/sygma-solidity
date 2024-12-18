@@ -50,7 +50,7 @@ describe("Bridge - [decimal conversion - native token]", () => {
   let proposal: Proposal;
 
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,

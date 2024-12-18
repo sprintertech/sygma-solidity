@@ -1,12 +1,19 @@
+import * as dotenv from "dotenv";
 import type { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomiclabs/hardhat-solhint";
 import "hardhat-chai-matchers-viem";
 import "hardhat-gas-reporter"
 
+
+dotenv.config();
+
 const config: HardhatUserConfig = {
   networks: {
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: `${process.env.FORKED_TESTS_PROVIDER}`
+      }
+    },
   },
   solidity: "0.8.11",
   gasReporter: {

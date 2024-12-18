@@ -24,7 +24,7 @@ describe("ERC1155Handler - [Burn ERC1155]", () => {
   let burnableContractAddresses: Array<Hex>;
   let mockBridge: WalletClient;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       ERC1155MintableInstance: ERC1155MintableInstance1,

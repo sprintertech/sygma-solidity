@@ -36,7 +36,7 @@ describe("Native token adapter - [distributeFee]", () => {
 
   let depositData: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       BridgeInstance,
       NativeTokenHandlerInstance,

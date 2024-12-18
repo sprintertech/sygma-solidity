@@ -30,7 +30,7 @@ describe("Bridge - [deposit - ERC721]", () => {
   let depositData: Hex;
   let resourceID: Hex;
 
-  before(async () => {
+  beforeEach(async () => {
     ({
       DefaultMessageReceiverInstance,
       BridgeInstance,
