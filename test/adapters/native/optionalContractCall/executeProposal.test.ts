@@ -48,6 +48,10 @@ describe("Bridge - [execute proposal - native token]", () => {
       BridgeInstance,
       ERC20MintableInstance,
       BasicFeeHandlerInstance,
+      DefaultMessageReceiverInstance,
+      NativeTokenTransferGatewayInstance,
+      NativeTokenHandlerInstance,
+      FeeHandlerRouterInstance
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -139,7 +143,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("should create and execute executeProposal with contract call successfully", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -159,8 +163,8 @@ describe("Bridge - [execute proposal - native token]", () => {
     ).not.to.be.reverted;
 
     const recipientNativeBalanceBefore = await getBalance(recipient);
-    const recipientERC20BalanceBefore = await ERC20MintableInstance.read.balanceOf([recipient]);
-    const defaultReceiverBalanceBefore = await getBalance(DefaultMessageReceiverInstance.address);
+    const recipientERC20BalanceBefore = await ERC20MintableInstance.read.balanceOf([recipient.account!.address]);
+    const defaultReceiverBalanceBefore = await getBalance(DefaultMessageReceiverInstance);
 
     await expect(
       BridgeInstance.write.executeProposal([proposal, proposalSignedData], {
@@ -180,7 +184,7 @@ describe("Bridge - [execute proposal - native token]", () => {
     // check that tokens are transferred to recipient address
     const recipientNativeBalanceAfter = await getBalance(recipient);
     const recipientERC20BalanceAfter = await ERC20MintableInstance.read.balanceOf([recipient.account!.address]);
-    const defaultReceiverBalanceAfter = await getBalance(DefaultMessageReceiverInstance.address);
+    const defaultReceiverBalanceAfter = await getBalance(DefaultMessageReceiverInstance);
 
     assert.strictEqual(
       recipientNativeBalanceBefore + transferredAmount,
@@ -194,7 +198,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("should skip executing proposal if deposit nonce is already used", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -234,7 +238,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("executeProposal event should be emitted with expected values", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -321,7 +325,7 @@ describe("Bridge - [execute proposal - native token]", () => {
       await DefaultMessageReceiverInstance.read.SYGMA_HANDLER_ROLE(),
       NativeTokenHandlerInstance.address
     ]);
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -358,7 +362,7 @@ describe("Bridge - [execute proposal - native token]", () => {
 
   it("should revert if insufficient gas limit left for executing action", async () => {
     const insufficientExecutionGasAmount = BigInt(100000);
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

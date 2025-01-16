@@ -13,6 +13,7 @@ describe("PercentageFeeHandler - [collectFee]", () => {
   const originDomainID = 1;
   const destinationDomainID = 2;
   const tokenAmount = parseEther("200000");
+  const expectedDepositNonce = 1;
 
   const emptySetResourceData = "0x";
   const feeData = "0x";
@@ -40,7 +41,8 @@ describe("PercentageFeeHandler - [collectFee]", () => {
       BridgeInstance,
       ERC20MintableInstance,
       ERC20HandlerInstance,
-      PercentageFeeHandlerInstance
+      PercentageFeeHandlerInstance,
+      FeeHandlerRouterInstance,
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -255,7 +257,11 @@ describe("PercentageFeeHandler - [collectFee]", () => {
 
     await expect(depositTx).to.emit(BridgeInstance, "Deposit").withArgs(
       destinationDomainID,
-      resourceID.toLowerCase()
+      resourceID.toLowerCase(),
+      expectedDepositNonce,
+      ERC20HandlerInstance.address,
+      depositData,
+      null
     );
 
     await expect(depositTx).to.emit(PercentageFeeHandlerInstance, "FeeCollected").withArgs(

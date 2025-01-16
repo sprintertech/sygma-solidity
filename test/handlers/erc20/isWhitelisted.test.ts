@@ -14,7 +14,6 @@ describe("ERC20Handler - [isWhitelisted]", () => {
   const emptySetResourceData = "0x";
 
   let BridgeInstance: ContractTypesMap["Bridge"];
-  let DefaultMessageReceiverInstance: ContractTypesMap["DefaultMessageReceiver"];
   let ERC20MintableInstance: ContractTypesMap["ERC20PresetMinterPauser"];
   let ERC20HandlerInstance: ContractTypesMap["ERC20Handler"];
 
@@ -24,6 +23,7 @@ describe("ERC20Handler - [isWhitelisted]", () => {
     ({
       BridgeInstance,
       ERC20MintableInstance,
+      ERC20HandlerInstance
     } = await loadFixture(deploySourceChainContracts));
 
     resourceID = createResourceID(

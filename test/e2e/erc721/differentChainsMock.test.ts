@@ -179,11 +179,11 @@ describe("E2E ERC721 - Two EVM Chains", () => {
 
   it(`E2E: tokenID of Origin ERC721 owned by depositAddress to Destination ERC721
       owned by recipient and back again`, async () => {
-    const originProposalSignedData = await signTypedProposal(
+    const originProposalSignedData = signTypedProposal(
       DestinationBridgeInstance.address,
       [originDomainProposal]
     );
-    const destinationProposalSignedData = await signTypedProposal(
+    const destinationProposalSignedData = signTypedProposal(
       OriginBridgeInstance.address,
       [destinationDomainProposal]
     );

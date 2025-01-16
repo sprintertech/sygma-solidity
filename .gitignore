@@ -12,3 +12,4 @@ data/
 .vscode/
 .env
 artifacts/
+cache

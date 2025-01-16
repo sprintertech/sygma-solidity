@@ -23,8 +23,11 @@ export const gasUsed = 100000;
 export const blankFunctionSig = "0x00000000" as unknown as Hex;
 export const blankFunctionDepositorOffset = "0x0000" as unknown as Hex;
 export const mpcAddress = "0x1Ad4b1efE3Bc6FEE085e995FCF48219430e615C3" as unknown as Hex;
-export const mpcPrivateKey =
-  "0x497b6ae580cb1b0238f8b6b543fada697bc6f8768a983281e5e52a1a5bca4d58" as unknown as Hex;
+export const mpcPrivateKey = Buffer.from(
+  "497b6ae580cb1b0238f8b6b543fada697bc6f8768a983281e5e52a1a5bca4d58",
+  "hex"
+);
+
 
 const accessControlFuncSignatures = generateAccessControlFuncSignatures();
 
@@ -319,7 +322,7 @@ export function createResourceID(contractAddress: Hex, domainID: number) {
   ]), {size: 32});
 };
 
-export function decimalToPaddedBinary(decimal: number): Hex {
+export function decimalToPaddedBinary(decimal: bigint): Hex {
   return decimal.toString(2).padStart(64, "0") as unknown as Hex;
 };
 
@@ -344,12 +347,14 @@ export function signTypedProposal(bridgeAddress: Hex, proposals: Array<Proposal>
     Proposals: [{name: "proposals", type: "Proposal[]"}],
   };
 
+
   return signTypedData({
-    privateKey: Buffer.from(mpcPrivateKey),
+    privateKey: mpcPrivateKey,
     data: {
       types: types,
       domain: {
         name,
+        version: "3.1.0",
         chainId,
         verifyingContract: bridgeAddress,
       },
@@ -358,7 +363,7 @@ export function signTypedProposal(bridgeAddress: Hex, proposals: Array<Proposal>
         proposals: proposals,
       },
     },
-    version: SignTypedDataVersion.V3,
+    version: SignTypedDataVersion.V4,
   }) as Hex;
 };
 
@@ -393,20 +398,27 @@ export async function createDepositProposalDataFromHandlerResponse(
 // and then pass the data to Bridge.deposit().
 export function createGmpExecutionData(
   types: Array<AbiParameter>,
-  values: Array<string>
+  values: Array<unknown>
 ) {
-  const array: string[] =  [];
   types.unshift("address" as unknown as AbiParameter);
+  const array: AbiParameter[] =  [];
+
   values.unshift(zeroAddress);
   return encodeAbiParameters(
     parseAbiParameters(
       types
       // ["address", "address", "uint256[]", "uint256[]", "bytes"],
     ),
-    array
+    values
   );
 };
 
+encodeAbiParameters(
+  parseAbiParameters(
+    ["uint[]", "uint[]", "bytes", "bytes"]
+  ),
+    [[BigInt(2)], [BigInt(2)], "0x", "0x"]
+);
 
 type Action = {
   nativeValue: BigInt,

@@ -7,6 +7,7 @@ import {Hex, parseEther, WalletClient, zeroAddress} from "viem";
 import {createERCDepositData, createResourceID, deploySourceChainContracts} from "../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from 'chai';
+import {parse} from 'path';
 
 
 describe("FeeHandlerRouter", () => {
@@ -42,7 +43,8 @@ describe("FeeHandlerRouter", () => {
       whitelistAddress,
       nonWhitelistAddress,
       nonAdmin,
-      feeHandlerMock
+      feeHandlerMock,
+      bridgeMock,
     ] = await hre.viem.getWalletClients();
 
     resourceID = createResourceID(
@@ -140,7 +142,7 @@ describe("FeeHandlerRouter", () => {
       depositData,
       feeData
     ]);
-    assert.equal(web3.utils.fromWei(res[0], "ether"), "0")
+    assert.equal(res[0], parseEther("0"))
     res = await FeeHandlerRouterInstance.read.calculateFee([
       nonWhitelistAddress.account!.address,
       originDomainID,
@@ -149,7 +151,7 @@ describe("FeeHandlerRouter", () => {
       depositData,
       feeData
     ]);
-    assert.equal(web3.utils.fromWei(res[0], "ether"), "0.5")
+    assert.equal(res[0], parseEther("0.5"))
   });
 
   it("should revert if whitelisted address provides fee", async () => {
@@ -172,7 +174,8 @@ describe("FeeHandlerRouter", () => {
         destinationDomainID,
         resourceID,
         depositData,
-        feeData],
+        feeData
+      ],
         {
           account: bridgeMock.account,
           value: parseEther("0.5")

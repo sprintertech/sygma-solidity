@@ -159,7 +159,7 @@ describe("Bridge - [execute proposal - erc20 token with contract call]", () => {
   });
 
   it("should create and execute executeProposal with contract call successfully", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -212,7 +212,7 @@ describe("Bridge - [execute proposal - erc20 token with contract call]", () => {
   });
 
   it("should skip executing proposal if deposit nonce is already used", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -254,7 +254,7 @@ describe("Bridge - [execute proposal - erc20 token with contract call]", () => {
   });
 
   it("executeProposal event should be emitted with expected values", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

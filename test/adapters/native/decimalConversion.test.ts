@@ -3,7 +3,7 @@
 
 import hre from "hardhat";
 import {assert, expect} from "chai";
-import {encodeAbiParameters, Hex, keccak256, parseAbiParameters, parseEther, parseUnits, WalletClient,  concat, toHex} from "viem";
+import {encodeAbiParameters, Hex, keccak256, parseAbiParameters, parseEther, parseUnits, WalletClient,  concat, toHex, toBytes} from "viem";
 import {createBtcDepositData, createERCDepositData, deploySourceChainContracts, getBalance, mpcAddress, signTypedProposal, trimPrefix} from "../../helpers";
 import {ContractTypesMap} from "hardhat/types";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
@@ -18,7 +18,7 @@ describe("Bridge - [decimal conversion - native token]", () => {
   const resourceID = toHex(650, {size:32});
   const btcrecipient = "bc1qs0fcdq73vgurej48yhtupzcv83un2p5qhsje7n";
   const originDecimalPlaces = 8;
-  const originHexDecimalPlaces = toHex(originDecimalPlaces);
+  const originHexDecimalPlaces = toHex(originDecimalPlaces, {size: 1});
   const depositAmount = parseUnits("1", originDecimalPlaces);
   const fee = parseUnits("0.1", originDecimalPlaces);
   const transferredAmount = depositAmount - fee;
@@ -91,9 +91,8 @@ describe("Bridge - [decimal conversion - native token]", () => {
     await BridgeInstance.write.endKeygen([mpcAddress]);
 
     // send ETH to destination adapter for transfers
-
     await depositor.sendTransaction({
-      account: depositor!.account,
+      account: depositor.account!.address,
       to: NativeTokenHandlerInstance.address,
       value: BigInt(1000000000000000000),
       chain: null
@@ -150,7 +149,7 @@ describe("Bridge - [decimal conversion - native token]", () => {
       data: proposalData,
     };
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

@@ -45,6 +45,9 @@ describe("Bridge - [deposit - native token]", () => {
       BridgeInstance,
       ERC20MintableInstance,
       BasicFeeHandlerInstance,
+      NativeTokenTransferGatewayInstance,
+      NativeTokenHandlerInstance,
+      FeeHandlerRouterInstance
     } = await loadFixture(deploySourceChainContracts));
     [
       ,

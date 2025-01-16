@@ -6,7 +6,7 @@ import {ContractTypesMap} from "hardhat/types";
 import {createERCDepositData, createResourceID, deploySourceChainContracts, mpcAddress} from "../helpers";
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {assert, expect} from 'chai';
-import {Hex, WalletClient} from 'viem';
+import {Hex, WalletClient, zeroHash} from 'viem';
 
 
 describe("Bridge - [deposit - XRC20]", async () => {
@@ -193,7 +193,10 @@ describe("Bridge - [deposit - XRC20]", async () => {
       await expect(depositTx).to.emit(BridgeInstance, "Deposit").withArgs(
         destinationDomainID,
         resourceID1.toLowerCase(),
-        expectedDepositNonce
+        expectedDepositNonce,
+        depositor,
+        depositData.toLowerCase(),
+        null
       );
 
       depositTx = await BridgeInstance.write.deposit([
@@ -219,7 +222,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
       await expect(
         BridgeInstance.write.deposit([
           destinationDomainID,
-          "0x0",
+          zeroHash,
           depositData,
           feeData
         ],
@@ -234,7 +237,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
       await expect(
         BridgeInstance.write.deposit([
           originDomainID,
-          "0x0",
+          zeroHash,
           depositData,
           feeData
         ],
@@ -352,7 +355,10 @@ describe("Bridge - [deposit - XRC20]", async () => {
       await expect(depositTx).to.emit(BridgeInstance, "Deposit").withArgs(
         destinationDomainID,
         resourceID1.toLowerCase(),
-        expectedDepositNonce
+        expectedDepositNonce,
+        depositor,
+        depositData.toLowerCase(),
+        null
       );
 
       depositTx = await BridgeInstance.write.deposit([
@@ -377,7 +383,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
       await expect(
         BridgeInstance.write.deposit([
           destinationDomainID,
-          "0x0",
+          zeroHash,
           depositData,
           feeData
         ],
@@ -390,7 +396,7 @@ describe("Bridge - [deposit - XRC20]", async () => {
 
     it("Deposit destination domain can not be current bridge domain ", async () => {
       await expect(
-        BridgeInstance.write.deposit([originDomainID, "0x0", depositData, feeData],
+        BridgeInstance.write.deposit([originDomainID, zeroHash, depositData, feeData],
           {
             account: depositor.account,
           }

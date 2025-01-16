@@ -154,7 +154,7 @@ describe("E2E ERC20 - Two EVM Chains, one with decimal places == 18, other with 
 
     it(`E2E: depositAmount of Origin ERC20 owned by depositAddress to Destination ERC20
         owned by recipient and back again`, async () => {
-        const destinationProposalSignedData = await signTypedProposal(
+        const destinationProposalSignedData = signTypedProposal(
           OriginBridgeInstance.address,
           [destinationDomainProposal]
         );
@@ -187,7 +187,7 @@ describe("E2E ERC20 - Two EVM Chains, one with decimal places == 18, other with 
           resourceID: destinationResourceID
         };
 
-        const originProposalSignedData = await signTypedProposal(
+        const originProposalSignedData = signTypedProposal(
           DestinationBridgeInstance.address,
           [originDomainProposal]
         );

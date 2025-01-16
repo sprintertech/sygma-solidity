@@ -63,7 +63,7 @@ describe("E2E ERC1155 - Same Chain", () => {
       depositor.account!.address,
       [tokenID],
       [initialTokenAmount],
-      "0x0"
+      "0x00"
     ]);
     await BridgeInstance.write.adminSetResource([
       ERC1155HandlerInstance.address,
@@ -106,7 +106,7 @@ describe("E2E ERC1155 - Same Chain", () => {
   });
 
   it("depositAmount of Destination ERC1155 should be transferred to recipient", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -197,7 +197,7 @@ describe("E2E ERC1155 - Same Chain", () => {
       ERC1155HandlerInstance.address,
       tokenID,
       depositAmount,
-      "0x0"],
+      "0x00"],
       {account: depositor.account}
     );
 

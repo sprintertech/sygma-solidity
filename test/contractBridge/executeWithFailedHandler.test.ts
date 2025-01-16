@@ -2,29 +2,25 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 import hre from 'hardhat';
-import {concat, fromBytes, Hex, keccak256, toBytes, toFunctionSelector, toHex} from "viem";
-import {deploySourceChainContracts, mpcAddress, trimPrefix, decimalToPaddedBinary} from "../helpers";
+import {concat, Hex, keccak256, toBytes, toFunctionSelector, toHex, WalletClient} from "viem";
+import {deploySourceChainContracts, mpcAddress, trimPrefix, decimalToPaddedBinary, createResourceID, constructGenericHandlerSetResourceData, blankFunctionDepositorOffset, blankFunctionSig, createERCDepositData, createERC721DepositProposalData, createERC1155DepositData, createERC1155DepositProposalData, createGmpDepositData, signTypedProposal} from "../helpers";
 import {ContractTypesMap} from "hardhat/types";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from 'chai';
+import {Proposal} from '../../types';
 
-const Helpers = require("../helpers");
 
 describe("Bridge - [execute - FailedHandlerExecution]", async () => {
   const originDomainID = 1;
   const destinationDomainID = 2;
-  const admin = accounts[0];
-  const depositor = accounts[1];
-  const recipient = accounts[2];
-  const relayer1 = accounts[3];
 
   const tokenID = BigInt(1);
   const erc721DepositMetadata = "0xf00d";
   const initialTokenAmount = BigInt(100);
   const depositAmount = BigInt(10);
   const erc20Allowance = BigInt(5000);
-  const expectedDepositNonces = [1, 2, 3, 4, 5, 6];
-  const destinationMaxFee = 900000;
+  const expectedDepositNonces = [BigInt(1), BigInt(2), BigInt(3), BigInt(4), BigInt(5), BigInt(6)];
+  const destinationMaxFee = BigInt(900000);
   const hashOfTestStore = keccak256("0xc0ffee");
   const feeData = "0x";
   const emptySetResourceData = "0x";
@@ -43,10 +39,13 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
   let XC20HandlerInstance: ContractTypesMap["XC20Handler"];;
   let TestStoreInstance: ContractTypesMap["TestStore"];
 
+  let depositor: WalletClient;
+  let recipient: WalletClient;
+  let relayer1: WalletClient;
+
   let depositFunctionSignature: Hex;
   let GmpHandlerSetResourceData;
   let erc721DepositProposalDataHash: Hex;
-  let erc721RevertDepositProposalDataHash: Hex;
 
   let erc20ResourceID: Hex;
   let erc721ResourceID: Hex;
@@ -64,6 +63,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
   let genericDepositProposalDataHash: Hex;
 
   let proposalsForExecution: Array<Proposal>;
+  let erc1155DepositData: Hex;
 
   beforeEach(async () => {
     ({
@@ -82,9 +82,9 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       HandlerRevert: ERC721RevertHandlerInstance
     } = await loadFixture(deploySourceChainContracts));
     [
-      admin,
+      ,
       depositor,
-      evmRecipient,
+      recipient,
       relayer1
     ] = await hre.viem.getWalletClients();
 
@@ -124,7 +124,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
         blankFunctionSig
       );
 
-    await ERC20MintableInstance.write.mint([depositor, initialTokenAmount]);
+    await ERC20MintableInstance.write.mint([depositor.account!.address, initialTokenAmount]);
     await BridgeInstance.write.adminSetResource([
       ERC20HandlerInstance.address,
       erc20ResourceID,
@@ -140,17 +140,17 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       ERC721RevertHandlerInstance.address
     ]);
     await ERC721MintableInstance.write.mint([
-      depositor,
+      depositor.account!.address,
       tokenID,
       erc721DepositMetadata
     ]);
     await ERC721RevertMintableInstance.write.mint([
-      depositor,
+      depositor.account!.address,
       tokenID,
       erc721DepositMetadata
     ]);
     await XC20TestInstance.write.mint([
-      depositor,
+      depositor.account!.address,
       initialTokenAmount
     ]);
     await BridgeInstance.write.adminSetResource([
@@ -166,10 +166,10 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       emptySetResourceData
     ]);
     await ERC1155MintableInstance.write.mintBatch([
-      depositor,
+      depositor.account!.address,
       [tokenID],
       [initialTokenAmount],
-      "0x0"
+      "0x00"
     ]);
     await BridgeInstance.write.adminSetResource([
       ERC1155HandlerInstance.address,
@@ -234,18 +234,18 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     erc20DepositProposalData = createERCDepositData(
       depositAmount,
       20,
-      recipient
+      recipient.account!.address
     );
 
     erc721DepositData = createERCDepositData(
       tokenID,
       20,
-      recipient
+      recipient.account!.address
     );
     erc721DepositProposalData = createERC721DepositProposalData(
       tokenID,
       20,
-      recipient,
+      recipient.account!.address,
       erc721DepositMetadata.length,
       erc721DepositMetadata
     );
@@ -258,23 +258,16 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     xc20DepositProposalData = createERCDepositData(
       depositAmount * BigInt(5), // amount greater than allowance
       20,
-      recipient
+      recipient.account!.address
     );
 
     erc721RevertDepositProposalData = createERC721DepositProposalData(
       tokenID,
       20,
-      recipient,
+      recipient.account!.address,
       erc721DepositMetadata.length,
       erc721DepositMetadata
     );
-    erc721RevertDepositProposalDataHash = keccak256(
-      concat([
-        ERC721RevertHandlerInstance.address,
-        trimPrefix(erc721RevertDepositProposalData)
-      ])
-    );
-
 
     erc1155DepositData = createERC1155DepositData(
       [tokenID],
@@ -283,7 +276,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     erc1155DepositProposalData = createERC1155DepositProposalData(
       [tokenID],
       [depositAmount],
-      recipient,
+      recipient.account!.address,
       "0x"
     );
 
@@ -291,7 +284,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       depositFunctionSignature,
       TestStoreInstance.address,
       destinationMaxFee,
-      depositor,
+      depositor.account!.address,
       hashOfTestStore
     );
     genericDepositProposalDataHash = keccak256(
@@ -355,7 +348,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposalsForExecution[0]]
     );
@@ -365,7 +358,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       proposalSignedData
     ],
       {
-        account: relayer1
+        account: relayer1.account!.address
       }
     );
 
@@ -396,7 +389,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposalsForExecution[2]]
     );
@@ -406,7 +399,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       proposalSignedData
     ],
       {
-        account: relayer1
+        account: relayer1.account!.address
       }
     );
 
@@ -437,7 +430,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposalsForExecution[3]]
     );
@@ -447,7 +440,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       proposalSignedData
     ],
       {
-        account: relayer1
+        account: relayer1.account!.address
       }
     );
 
@@ -478,7 +471,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposalsForExecution[4]]
     );
@@ -488,7 +481,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       proposalSignedData
     ],
       {
-        account: relayer1
+        account: relayer1.account!.address
       }
     );
 
@@ -519,7 +512,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposalsForExecution[5]]
     );
@@ -529,7 +522,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
       proposalSignedData
     ],
       {
-        account: relayer1
+        account: relayer1.account!.address
       }
     );
 
@@ -560,7 +553,7 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
     // depositNonce is not used
     assert.isFalse(depositProposalBeforeFailedExecute);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       proposalsForExecution
     );
@@ -629,13 +622,13 @@ describe("Bridge - [execute - FailedHandlerExecution]", async () => {
 
     // recipient ERC20 token balances hasn't changed
     const recipientERC20Balance = await ERC20MintableInstance.read.balanceOf([
-      recipient
+      recipient.account!.address
     ]);
     assert.strictEqual(recipientERC20Balance, BigInt(0));
 
     // recipient ERC721 token balance has changed to 1 token
     const recipientERC721Balance = await ERC721MintableInstance.read.balanceOf([
-      recipient
+      recipient.account!.address
     ]);
     assert.strictEqual(recipientERC721Balance, BigInt(1));
 

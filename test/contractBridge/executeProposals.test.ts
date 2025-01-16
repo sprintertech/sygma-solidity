@@ -108,7 +108,7 @@ describe("Bridge - [execute proposals]", () => {
       depositor.account!.address,
       [tokenID],
       [initialTokenAmount],
-      "0x0"
+      "0x00"
     ]);
 
     await ERC20MintableInstance.write.approve([
@@ -214,7 +214,7 @@ describe("Bridge - [execute proposals]", () => {
   });
 
   it("should create and execute executeProposal successfully", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       proposalsForExecution
     );
@@ -300,7 +300,7 @@ describe("Bridge - [execute proposals]", () => {
   });
 
   it("should skip executing proposal if deposit nonce is already used", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       proposalsForExecution
     );
@@ -398,7 +398,7 @@ describe("Bridge - [execute proposals]", () => {
   });
 
   it("should fail executing proposals if empty array is passed for execution", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       proposalsForExecution
     );
@@ -414,7 +414,7 @@ describe("Bridge - [execute proposals]", () => {
   });
 
   it("executeProposal event should be emitted with expected values", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       proposalsForExecution
     );

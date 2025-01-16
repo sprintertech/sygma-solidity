@@ -58,7 +58,7 @@ describe("ERC1155Handler - [Deposit Burn ERC1155]", () => {
       depositor,
       [tokenID],
       [tokenAmount],
-      "0x0"
+      "0x00"
     ]);
 
     await ERC1155MintableInstance1.write.setApprovalForAll([

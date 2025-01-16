@@ -3,12 +3,11 @@
 
 import hre from 'hardhat';
 import {ContractTypesMap} from "hardhat/types";
-import {formatUnits, Hex, parseEther, parseUnits, WalletClient} from "viem";
-import {deploySourceChainContracts} from "../../../helpers";
+import {Hex, WalletClient} from "viem";
+import {createResourceID, deploySourceChainContracts} from "../../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from 'chai';
 
-const Helpers = require("../../../helpers");
 
 describe("PercentageFeeHandler - [change fee and bounds]", () => {
   const originDomainID = 1;
@@ -19,7 +18,6 @@ describe("PercentageFeeHandler - [change fee and bounds]", () => {
 
   let resourceID: Hex;
 
-  let BridgeInstance: ContractTypesMap["Bridge"];
   let ERC20MintableInstance: ContractTypesMap["ERC20PresetMinterPauser"];
   let PercentageFeeHandlerInstance: ContractTypesMap["PercentageERC20FeeHandler"];
 
@@ -28,7 +26,6 @@ describe("PercentageFeeHandler - [change fee and bounds]", () => {
 
   beforeEach(async () => {
     ({
-      BridgeInstance,
       PercentageFeeHandlerInstance,
       ERC20MintableInstance,
     } = await loadFixture(deploySourceChainContracts));

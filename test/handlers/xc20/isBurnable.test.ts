@@ -29,6 +29,8 @@ describe("XC20Handler - [Burn XC20]", () => {
     ({
       BridgeInstance,
       XC20HandlerInstance,
+      ERC20MintableInstance: ERC20MintableInstance1,
+      ERC20MintableInstance: ERC20MintableInstance2,
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -75,7 +77,7 @@ describe("XC20Handler - [Burn XC20]", () => {
     for (const burnableAddress of burnableContractAddresses) {
       const isBurnable = (await XC20HandlerInstance.read._tokenContractAddressToTokenProperties([
         burnableAddress
-      ]));
+      ]))[2];
 
       assert.isTrue(isBurnable, "Contract wasn't successfully marked burnable");
     }
@@ -104,7 +106,7 @@ describe("XC20Handler - [Burn XC20]", () => {
 
     const isBurnable = (await XC20HandlerInstance.read._tokenContractAddressToTokenProperties([
       ERC20MintableInstance2.address
-    ]));
+    ]))[2];
 
     assert.isFalse(isBurnable, "Contract shouldn't be marked burnable");
   });
@@ -139,7 +141,7 @@ describe("XC20Handler - [Burn XC20]", () => {
     ]);
     const isBurnable = (await XC20HandlerInstance.read._tokenContractAddressToTokenProperties([
       ERC20MintableInstance2.address
-    ]));
+    ]))[2];
 
     assert.isTrue(isBurnable, "Contract wasn't successfully marked burnable");
   });
@@ -169,10 +171,10 @@ describe("XC20Handler - [Burn XC20]", () => {
     // tokens should be marked as burnable
     for (let i = 0; i < initialResourceIDs.length; i++) {
       const isBurnableBeforeReRegisteringResource = (
-        await XC20HandlerInstance._tokenContractAddressToTokenProperties.call(
-          initialContractAddresses[i]
+        await XC20HandlerInstance.read._tokenContractAddressToTokenProperties(
+          [initialContractAddresses[i]]
         )
-      ).isBurnable;
+      )[2];
 
       assert.isTrue(isBurnableBeforeReRegisteringResource, "Contract wasn't successfully marked burnable");
     }
@@ -192,10 +194,10 @@ describe("XC20Handler - [Burn XC20]", () => {
     // tokens should not be marked as burnable if resource is re-registered
     for (let i = 0; i < initialResourceIDs.length; i++) {
       const isBurnableAfterReRegisteringResource = (
-        await XC20HandlerInstance._tokenContractAddressToTokenProperties.call(
-          initialContractAddresses[i]
+        await XC20HandlerInstance.read._tokenContractAddressToTokenProperties(
+          [initialContractAddresses[i]]
         )
-      ).isBurnable;
+      )[2];
 
       assert.isFalse(isBurnableAfterReRegisteringResource, "Contract shouldn't be marked burnable");
     }

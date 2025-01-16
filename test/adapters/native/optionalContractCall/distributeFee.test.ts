@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 import hre from 'hardhat';
-import {concat, encodeAbiParameters, encodeFunctionData, Hex, keccak256, parseAbiParameters, parseEther, parseUnits, toFunctionSelector, toHex, WalletClient, zeroAddress} from "viem";
-import {createBtcDepositData, createGmpDepositData, createMessageCallData, createOptionalContractCallDepositData, createResourceID, deploySourceChainContracts, mpcAddress, trimPrefix} from "../../../helpers";
+import {concat, encodeAbiParameters, encodeFunctionData, formatEther, formatUnits, Hex, keccak256, parseAbiParameters, parseEther, parseUnits, toFunctionSelector, toHex, WalletClient, zeroAddress} from "viem";
+import {createBtcDepositData, createGmpDepositData, createMessageCallData, createOptionalContractCallDepositData, createResourceID, deploySourceChainContracts, getBalance, mpcAddress, trimPrefix} from "../../../helpers";
 import {ContractTypesMap} from 'hardhat/types';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {assert, expect} from 'chai';
@@ -43,6 +43,8 @@ describe("Native token adapter - [distributeFee]", () => {
       BridgeInstance,
       ERC20MintableInstance,
       BasicFeeHandlerInstance,
+      NativeTokenHandlerInstance,
+      NativeTokenTransferGatewayInstance,
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -111,11 +113,8 @@ describe("Native token adapter - [distributeFee]", () => {
 
     // check the balance is 0
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(BridgeInstance.address),
-        "ether"
-      ),
-      "0"
+      await getBalance(BridgeInstance),
+      parseEther("0")
     );
     await NativeTokenTransferGatewayInstance.write.depositToEVMWithMessage([
       destinationDomainID,
@@ -128,25 +127,16 @@ describe("Native token adapter - [distributeFee]", () => {
       }
     );
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(BridgeInstance.address),
-        "ether"
-      ),
-      "0"
+      await getBalance(BridgeInstance),
+      parseEther("0")
     );
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenTransferGatewayInstance.address),
-        "ether"
-      ),
-      "0"
+      await getBalance(NativeTokenTransferGatewayInstance),
+      parseEther("0")
     );
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenHandlerInstance.address),
-        "ether"
-      ),
-      Ethers.utils.formatUnits(transferredAmount)
+      await getBalance(NativeTokenHandlerInstance),
+      parseEther(transferredAmount.toString())
     );
 
     const depositorBalanceBefore = await getBalance(depositor);
@@ -171,8 +161,8 @@ describe("Native token adapter - [distributeFee]", () => {
       payout
     );
 
-    const depositorBalanceAfter = await getBalance(depositor.account!.address);
-    const recipientBalanceAfter = await getBalance(recipient.account!.address);
+    const depositorBalanceAfter = await getBalance(depositor);
+    const recipientBalanceAfter = await getBalance(recipient);
     assert.equal(depositorBalanceAfter, depositorBalanceBefore + payout);
     assert.equal(recipientBalanceAfter, recipientBalanceBefore + payout);
   });
@@ -193,18 +183,12 @@ describe("Native token adapter - [distributeFee]", () => {
     );
 
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenTransferGatewayInstance.address),
-        "ether"
-      ),
-      "0"
+      await getBalance(NativeTokenTransferGatewayInstance),
+      parseEther("0")
     );
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenHandlerInstance.address),
-        "ether"
-      ),
-      Ethers.utils.formatUnits(transferredAmount)
+      await getBalance(NativeTokenHandlerInstance),
+      parseEther(transferredAmount.toString())
     );
 
     const payout = parseEther("0.01");
@@ -231,18 +215,12 @@ describe("Native token adapter - [distributeFee]", () => {
     );
 
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenTransferGatewayInstance.address),
-        "ether"
-      ),
-      "0"
+      await getBalance(NativeTokenTransferGatewayInstance),
+      parseEther("0")
     );
     assert.equal(
-      web3.utils.fromWei(
-        await getBalance(NativeTokenHandlerInstance.address),
-        "ether"
-      ),
-      Ethers.utils.formatUnits(transferredAmount)
+      await getBalance(NativeTokenHandlerInstance),
+      parseEther(transferredAmount.toString())
     );
 
     const payout = parseEther("0.01");

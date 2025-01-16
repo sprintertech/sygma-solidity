@@ -35,12 +35,11 @@
   "author": "Sygma",
   "license": "BUSL-1.1",
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
-    "@nomicfoundation/hardhat-ignition": "^0.15.0",
+    "@metamask/eth-sig-util": "^8.1.2",
     "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
-    "@nomicfoundation/hardhat-viem": "^2.0.5",
+    "@nomicfoundation/hardhat-viem": "^2.0.6",
     "@nomiclabs/hardhat-solhint": "^4.0.1",
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^7.1.6",
@@ -54,21 +53,20 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "hardhat": "^2.22.15",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18",
     "hardhat-chai-matchers-viem": "^2.0.8",
     "hardhat-gas-reporter": "^2.2.2",
     "prettier": "2.8.1",
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.8.0",
+    "solmate": "^6.8.0",
     "ts-node": ">=8.0.0",
     "typescript": "5.0.3",
     "viem": "^2.13.7"
   },
   "dependencies": {
-    "@metamask/eth-sig-util": "^8.1.1",
     "@openzeppelin/contracts": "4.5.0",
-    "@uniswap/v3-periphery": "^1.4.4",
-    "ethers": "^6.13.4",
-    "solmate": "^6.2.0"
+    "@uniswap/v3-periphery": "^1.4.4"
   }
 }

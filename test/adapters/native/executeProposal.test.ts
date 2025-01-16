@@ -88,10 +88,11 @@ describe("Bridge - [execute proposal - native token]", () => {
     await BridgeInstance.write.endKeygen([mpcAddress]);
 
     // send ETH to destination adapter for transfers
-    await web3.eth.sendTransaction({
-       account: depositor.account,
+    await depositor.sendTransaction({
+       account: depositor.account!.address,
       to: NativeTokenHandlerInstance.address,
-      value: "1000000000000000000"
+      value: BigInt(1000000000000000000),
+      chain: null
     })
   });
 
@@ -107,7 +108,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("should create and execute executeProposal successfully", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -145,7 +146,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("should skip executing proposal if deposit nonce is already used", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -181,7 +182,7 @@ describe("Bridge - [execute proposal - native token]", () => {
   });
 
   it("executeProposal event should be emitted with expected values", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

@@ -182,7 +182,7 @@ describe("Bridge - [deposit - ERC721]", () => {
 
   it("Deposit destination domain can not be current bridge domain ", async () => {
     await expect(
-      BridgeInstance.write.deposit([originDomainID, "0x0", depositData, feeData],
+      BridgeInstance.write.deposit([originDomainID, "0x00", depositData, feeData],
         {
           account: depositor.account,
         }

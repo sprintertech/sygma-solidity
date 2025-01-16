@@ -95,7 +95,7 @@ describe("ERC20Handler - [Deposit Burn ERC20]", () => {
     for (const burnableAddress of burnableContractAddresses) {
       const isBurnable = (await ERC20HandlerInstance.read._tokenContractAddressToTokenProperties([
         burnableAddress
-      ]))[0]
+      ]))[2]
 
       assert.isTrue(isBurnable, "Contract wasn't successfully marked burnable");
     }

@@ -9,33 +9,39 @@ import {Account, Hex, toHex, WalletClient} from 'viem';
 describe("AccessControlSegregator - [constructor]", () => {
   let AccessControlSegregatorInstance: ContractTypesMap["AccessControlSegregator"];
 
+  let authorizedAddress: WalletClient;
   let firstEOA: WalletClient;
   let secondEOA: WalletClient;
   let thirdEOA: WalletClient;
-  let fourthEOA: WalletClient;
 
   const initialFunctions= [
-    toHex("29a71964"),
-    toHex("0x78728c73"),
-    toHex("0x2a64052b"),
-    toHex("0x3a24555a"),
+    ("0x29a71964") as unknown as Hex,
+    ("0x78728c73") as unknown as Hex,
+    ("0x2a64052b") as unknown as Hex,
+    ("0x3a24555a") as unknown as Hex,
   ];
 
-  let initialAccessHolders: Array<WalletClient>;
+  let initialAccessHolders: Array<Hex>;
 
-  const grantAccessSig = "0xa973ec93";
+  const grantAccessSig = "0xa973ec93" as unknown as Hex;
 
   beforeEach(async () => {
-    AccessControlSegregatorInstance = await hre.viem.deployContract("AccessControlSegregator", [[],[]]);
-      [
-        ,
-        firstEOA,
-        secondEOA,
-        thirdEOA,
-        fourthEOA,
-      ] = await hre.viem.getWalletClients();
-
-    initialAccessHolders = [firstEOA, secondEOA, thirdEOA, fourthEOA];
+    [
+      authorizedAddress,
+      firstEOA,
+      secondEOA,
+      thirdEOA,
+    ] = await hre.viem.getWalletClients();
+    initialAccessHolders = [
+      authorizedAddress.account!.address,
+      firstEOA.account!.address,
+      secondEOA.account!.address,
+      thirdEOA.account!.address
+    ];
+    AccessControlSegregatorInstance = await hre.viem.deployContract("AccessControlSegregator", [
+      initialFunctions,
+      initialAccessHolders
+    ]);
   });
 
   it("should revert if length of functions and accounts array is different", async () => {
@@ -51,7 +57,7 @@ describe("AccessControlSegregator - [constructor]", () => {
     assert.isTrue(
       await AccessControlSegregatorInstance.read.hasAccess([
         grantAccessSig,
-        initialAccessHolders[0].account!.address
+        initialAccessHolders[0]
       ])
     );
   });
@@ -61,7 +67,7 @@ describe("AccessControlSegregator - [constructor]", () => {
       assert.isTrue(
         await AccessControlSegregatorInstance.read.hasAccess([
           initialFunctions[i],
-          initialAccessHolders[i].account!.address
+          initialAccessHolders[i]
         ])
       );
     }

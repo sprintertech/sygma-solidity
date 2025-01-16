@@ -2,7 +2,7 @@
 
 import hre from 'hardhat';
 import {ContractTypesMap} from "hardhat/types";
-import {createResourceID, deploySourceChainContracts, mpcAddress} from "../../../helpers";
+import {createERCDepositData, createResourceID, deploySourceChainContracts, mpcAddress} from "../../../helpers";
 import {Hex, WalletClient} from "viem";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from 'chai';
@@ -41,7 +41,8 @@ describe("PercentageFeeHandler - [distributeFee]", () => {
       BridgeInstance,
       ERC20MintableInstance,
       ERC20HandlerInstance,
-      PercentageFeeHandlerInstance
+      PercentageFeeHandlerInstance,
+      FeeHandlerRouterInstance
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -90,7 +91,7 @@ describe("PercentageFeeHandler - [distributeFee]", () => {
     depositData = createERCDepositData(
       depositAmount,
       20,
-      recipient
+      recipient.account!.address
     );
 
     // set MPC address to unpause the Bridge

@@ -50,7 +50,8 @@ describe("Bridge - [deposit - erc20 token with contract call]", () => {
         ERC721MintableInstance,
         BasicFeeHandlerInstance: ERC20BasicFeeHandlerInstance,
         BasicFeeHandlerInstance: ERC721BasicFeeHandlerInstance,
-        PercentageFeeHandlerInstance
+        PercentageFeeHandlerInstance,
+        FeeHandlerRouterInstance
       } = await loadFixture(deploySourceChainContracts));
       [
         ,

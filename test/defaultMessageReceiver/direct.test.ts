@@ -19,6 +19,7 @@ describe("DefaultMessageReceiver - direct interaction", () => {
   let ForwarderInstance2: ContractTypesMap["Forwarder"];
 
   let admin: WalletClient;
+  let depositor: WalletClient;
   let handlerMock: WalletClient
   let recipient: WalletClient;
   let relayer1: WalletClient;
@@ -35,6 +36,7 @@ describe("DefaultMessageReceiver - direct interaction", () => {
     } = await loadFixture(deploySourceChainContracts));
     [
       admin,
+      depositor,
       handlerMock,
       recipient,
       relayer1,
@@ -48,7 +50,7 @@ describe("DefaultMessageReceiver - direct interaction", () => {
   });
 
   it("should have valid defaults", async () => {
-    assert.equal(await DefaultMessageReceiverInstance.read._recoverGas(), recoveredGas);
+    assert.equal(await DefaultMessageReceiverInstance.read._recoverGas(), BigInt(100000));
     assert.isTrue(await DefaultMessageReceiverInstance.read.hasRole([SYGMA_HANDLER_ROLE, handlerMock.account!.address]));
   });
 
@@ -94,7 +96,7 @@ describe("DefaultMessageReceiver - direct interaction", () => {
     await expect(
       DefaultMessageReceiverInstance.write.handleSygmaMessage([zeroAddress, BigInt(0), message], {
         account: handlerMock.account,
-        gas: recoveredGas,
+        gas: BigInt(100000),
       }),
     ).to.be.revertedWithCustomError(DefaultMessageReceiverInstance, "InsufficientGasLimit()");
   });
@@ -106,18 +108,19 @@ describe("DefaultMessageReceiver - direct interaction", () => {
       actions,
       recipient.account!.address
     );
-    await DefaultMessageReceiverInstance.write.handleSygmaMessage([zeroAddress, 0, message], {
+    await DefaultMessageReceiverInstance.write.handleSygmaMessage([zeroAddress, BigInt(0), message], {
       account: handlerMock.account,
-      gas: 200000,
+      gas: BigInt(200000),
     });
   });
 
   it("should not return native token if not received during handling", async () => {
     const actions: Array<Action> = [];
-    await web3.eth.sendTransaction({
-      account: admin.account,
+    await depositor.sendTransaction({
+      account: admin.account!.address,
       to: DefaultMessageReceiverInstance.address,
-      value: 100,
+      value: BigInt(100),
+      chain: null
     });
     const message = createMessageCallData(
       transactionId,
@@ -126,17 +129,18 @@ describe("DefaultMessageReceiver - direct interaction", () => {
     );
     await DefaultMessageReceiverInstance.write.handleSygmaMessage([zeroAddress, BigInt(0), message], {
       account: handlerMock.account,
-      gas: 200000,
+      gas: BigInt(200000),
     });
     assert.equal(await getBalance(DefaultMessageReceiverInstance), BigInt(100));
   });
 
   it("should return full native token balance if contract balance increased during handling", async () => {
     const actions: Array<Action> = [];
-    await web3.eth.sendTransaction({
-      account: admin.account,
+    await depositor.sendTransaction({
+      account: admin.account!.address,
       to: DefaultMessageReceiverInstance.address,
-      value: 100,
+      value: BigInt(100),
+      chain: null
     });
     const message = createMessageCallData(
       transactionId,
@@ -186,10 +190,11 @@ describe("DefaultMessageReceiver - direct interaction", () => {
       tokenReceive: zeroAddress,
       data: "0x" as unknown as Hex,
     }];
-    await web3.eth.sendTransaction({
-      from: admin,
+    await depositor.sendTransaction({
+      account: depositor.account!.address,
       to: DefaultMessageReceiverInstance.address,
-      value: 100,
+      value: BigInt(100),
+      chain: null
     });
     const message = createMessageCallData(
       transactionId,

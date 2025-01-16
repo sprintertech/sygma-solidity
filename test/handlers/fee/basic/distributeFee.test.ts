@@ -3,12 +3,11 @@
 
 import hre from 'hardhat';
 import {parseEther, Hex, WalletClient, zeroAddress} from "viem";
-import {createERCDepositData, deploySourceChainContracts, mpcAddress} from "../../../helpers";
+import {createERCDepositData, deploySourceChainContracts, getBalance, mpcAddress} from "../../../helpers";
 import {ContractTypesMap} from "hardhat/types";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from 'chai';
 
-const Helpers = require("../../../helpers");
 
 describe("BasicFeeHandler - [distributeFee]", () => {
   const originDomainID = 1;
@@ -89,7 +88,7 @@ describe("BasicFeeHandler - [distributeFee]", () => {
 
     // check the balance is 0
     assert.equal(
-      await getBalance(BridgeInstance.address),
+      await getBalance(BridgeInstance),
       parseEther("0")
     );
 
@@ -105,11 +104,11 @@ describe("BasicFeeHandler - [distributeFee]", () => {
       }
     );
     assert.equal(
-      await getBalance(BridgeInstance.address),
+      await getBalance(BridgeInstance),
       parseEther("0")
     );
     assert.equal(
-      await getBalance(BasicFeeHandlerInstance.address),
+      await getBalance(BasicFeeHandlerInstance),
       parseEther("1")
     );
 

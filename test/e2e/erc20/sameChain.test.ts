@@ -113,7 +113,7 @@ describe("E2E ERC20 - Same Chain", () => {
   });
 
   it("depositAmount of Destination ERC20 should be transferred to recipient", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

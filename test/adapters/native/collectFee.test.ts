@@ -77,6 +77,7 @@ describe("Bridge - [collect fee - native token]", () => {
     // check that correct ETH amount is successfully transferred to the adapter
     const adapterBalanceAfter = await getBalance(NativeTokenTransferGatewayInstance);
     const handlerBalanceAfter = await getBalance(NativeTokenHandlerInstance);
+    console.log("123-0", depositAmount)
     console.log("123-1", transferredAmount)
     console.log("123-2", handlerBalanceBefore)
     console.log("123-3", handlerBalanceAfter)

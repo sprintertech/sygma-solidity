@@ -9,7 +9,6 @@ import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert, expect} from "chai";
 import {Proposal} from '../../types';
 
-const Helpers = require("../helpers");
 
 describe("Bridge - [execute proposal - XC20]", async () => {
   const originDomainID = 1;
@@ -122,7 +121,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("should create and execute executeProposal successfully", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -169,7 +168,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("should skip executing proposal if deposit nonce is already used", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -213,7 +212,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("executeProposal event should be emitted with expected values", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -316,7 +315,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("should create and execute executeProposal successfully", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -363,7 +362,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("should skip executing proposal if deposit nonce is already used", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -407,7 +406,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
     });
 
     it("executeProposal event should be emitted with expected values", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -495,7 +494,7 @@ describe("Bridge - [execute proposal - XC20]", async () => {
 
   it(`transfer event should be emitted with expected values when executing proposal -
       mint to handler and then transfer to recipient`, async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

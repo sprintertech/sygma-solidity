@@ -41,6 +41,7 @@ describe("ERC20Handler - [Deposit ERC20]", async () => {
       admin,
       depositor,
       recipient,
+      EOA_Address
     ] = await hre.viem.getWalletClients();
 
     resourceID = createResourceID(

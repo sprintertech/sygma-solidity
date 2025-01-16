@@ -124,7 +124,7 @@ describe("Bridge - [execute proposal - native token]", () => {
       await DefaultMessageReceiverInstance.read.SYGMA_HANDLER_ROLE(),
       NativeTokenHandlerInstance.address
     ]);
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -161,7 +161,7 @@ describe("Bridge - [execute proposal - native token]", () => {
 
   it("should revert if insufficient gas limit left for executing action", async () => {
     const insufficientExecutionGasAmount = BigInt(100000);
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -230,7 +230,7 @@ describe("Bridge - [execute proposal - native token]", () => {
       resourceID: resourceID,
       data: depositProposalData
     };
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

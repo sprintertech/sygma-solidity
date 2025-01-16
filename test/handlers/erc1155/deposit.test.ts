@@ -50,7 +50,7 @@ describe("ERC1155Handler - [Deposit ERC1155]", () => {
       depositor.account!.address,
       [tokenID],
       [tokenAmount],
-      "0x0"
+      "0x00"
     ]);
 
     await ERC1155MintableInstance.write.setApprovalForAll([
@@ -98,6 +98,7 @@ describe("ERC1155Handler - [Deposit ERC1155]", () => {
       destinationDomainID,
       resourceID.toLowerCase(),
       expectedDepositNonce,
+      depositor.account!.address,
       depositData,
       null,
     );

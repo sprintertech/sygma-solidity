@@ -5,16 +5,16 @@ import hre from 'hardhat';
 import {ContractTypesMap} from "hardhat/types";
 import {createResourceID, deploySourceChainContracts} from "../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
-import {Hex} from "viem";
+import {Hex, WalletClient} from "viem";
 import {assert} from "chai";
 
 
 describe("XC20Handler - [isWhitelisted]", async () => {
+  const domainID = 1;
   const emptySetResourceData = "0x";
 
   let BridgeInstance: ContractTypesMap["Bridge"];
   let ERC20MintableInstance1: ContractTypesMap["ERC20PresetMinterPauser"];
-  let ERC20MintableInstance2: ContractTypesMap["ERC20PresetMinterPauser"];
   let XC20HandlerInstance: ContractTypesMap["XC20Handler"];
 
   let resourceID: Hex;
@@ -23,14 +23,8 @@ describe("XC20Handler - [isWhitelisted]", async () => {
     ({
       BridgeInstance,
       ERC20MintableInstance: ERC20MintableInstance1,
-      ERC20MintableInstance: ERC20MintableInstance2,
       XC20HandlerInstance,
     } = await loadFixture(deploySourceChainContracts));
-    [
-      ,
-      depositor,
-      recipient
-    ] = await hre.viem.getWalletClients();
 
     resourceID = createResourceID(
       ERC20MintableInstance1.address,

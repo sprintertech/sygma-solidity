@@ -84,7 +84,7 @@ describe("E2E ERC1155 - Two EVM Chains", () => {
       depositor.account!.address,
       [tokenID],
       [initialTokenAmount],
-      "0x0"
+      "0x00"
     ]);
 
     await OriginERC1155MintableInstance.write.setApprovalForAll([
@@ -173,11 +173,11 @@ describe("E2E ERC1155 - Two EVM Chains", () => {
 
   it(`E2E: tokenID of Origin ERC1155 owned by depositAddress to Destination ERC1155
       owned by recipient and back again`, async () => {
-    const originProposalSignedData = await signTypedProposal(
+    const originProposalSignedData = signTypedProposal(
       DestinationBridgeInstance.address,
       [originDomainProposal]
     );
-    const destinationProposalSignedData = await signTypedProposal(
+    const destinationProposalSignedData = signTypedProposal(
       OriginBridgeInstance.address,
       [destinationDomainProposal]
     );

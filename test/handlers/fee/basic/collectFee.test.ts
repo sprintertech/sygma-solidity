@@ -6,7 +6,6 @@ import {Hex, parseEther, WalletClient, zeroAddress} from "viem";
 import {createResourceID, deploySourceChainContracts, mpcAddress} from "../../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 
-const Helpers = require("../../../helpers");
 
 import {ContractTypesMap} from "hardhat/types";
 import {assert, expect} from 'chai';

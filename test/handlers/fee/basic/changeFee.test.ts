@@ -8,7 +8,6 @@ import {Hex, parseEther, WalletClient} from "viem";
 import {deploySourceChainContracts} from "../../../helpers";
 import {assert, expect} from "chai";
 
-const Helpers = require("../../../helpers");
 
 describe("BasicFeeHandler - [changeFee]", () => {
   const originDomainID = 1;

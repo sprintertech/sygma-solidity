@@ -54,7 +54,7 @@ describe("Bridge - [deposit - ERC1155]", () => {
       depositor.account!.address,
       [tokenID],
       [initialTokenAmount],
-      "0x0"
+      "0x00"
     ]);
     await ERC1155MintableInstance.write.setApprovalForAll([
       ERC1155HandlerInstance.address,
@@ -184,7 +184,7 @@ describe("Bridge - [deposit - ERC1155]", () => {
     await expect(
       BridgeInstance.write.deposit([
         destinationDomainID,
-        "0x0",
+        "0x00",
         depositData,
         feeData
       ],
@@ -199,7 +199,7 @@ describe("Bridge - [deposit - ERC1155]", () => {
     await expect(
       BridgeInstance.write.deposit([
         originDomainID,
-        "0x0",
+        "0x00",
         depositData,
         feeData
       ],

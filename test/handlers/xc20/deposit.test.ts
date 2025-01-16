@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 import {concat, keccak256, WalletClient} from "viem";
-import {mpcAddress, trimPrefix} from "../../helpers";
+import {createERCDepositData, mpcAddress, trimPrefix} from "../../helpers";
 import hre from 'hardhat';
 import {ContractTypesMap} from "hardhat/types";
 import {createResourceID, deploySourceChainContracts} from "../../helpers";

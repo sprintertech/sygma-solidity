@@ -8,7 +8,6 @@ import {deploySourceChainContracts} from "../../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import {assert} from 'chai';
 
-const Helpers = require("../../../helpers");
 
 describe("BasicFeeHandler - [calculateFee]", () => {
   const originDomainID = 1;

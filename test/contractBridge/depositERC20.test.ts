@@ -43,6 +43,7 @@ describe("Bridge - [deposit - ERC20]", async () => {
     [
       ,
       depositor,
+      recipient
     ] = await hre.viem.getWalletClients();
 
     const resourceID1 = createResourceID(
@@ -202,7 +203,7 @@ describe("Bridge - [deposit - ERC20]", async () => {
     await expect(
       BridgeInstance.write.deposit([
         destinationDomainID,
-        "0x0",
+        "0x00",
         depositData,
         feeData
       ],
@@ -217,7 +218,7 @@ describe("Bridge - [deposit - ERC20]", async () => {
     await expect(
       BridgeInstance.write.deposit([
         originDomainID,
-        "0x0",
+        "0x00",
         depositData,
         feeData
       ],

@@ -223,7 +223,7 @@ describe("Bridge - [decimal conversion - erc20 token]", () => {
       data: proposalData,
     };
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

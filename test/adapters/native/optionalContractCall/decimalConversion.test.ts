@@ -127,10 +127,11 @@ describe("Bridge - [decimal conversion - native token]", () => {
     };
 
     // send ETH to destination adapter for transfers
-    await web3.eth.sendTransaction({
-       account: depositor.account,
+    await depositor.sendTransaction({
+      account: depositor.account!.address,
       to: NativeTokenHandlerInstance.address,
-      value: "1000000000000000000"
+      value: BigInt(1000000000000000000),
+      chain: null
     })
 
     // set MPC address to unpause the Bridge
@@ -192,7 +193,7 @@ describe("Bridge - [decimal conversion - native token]", () => {
       data: proposalData,
     };
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

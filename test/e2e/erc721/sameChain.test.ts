@@ -117,7 +117,7 @@ describe("E2E ERC721 - Same Chain", () => {
     const tokenOwner = await ERC721MintableInstance.read.ownerOf([tokenID]);
     assert.strictEqual(ERC721HandlerInstance.address, tokenOwner);
 
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

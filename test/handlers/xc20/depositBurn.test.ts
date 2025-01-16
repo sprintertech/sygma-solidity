@@ -3,7 +3,7 @@
 
 import hre from 'hardhat';
 import {WalletClient} from "viem";
-import {mpcAddress} from "../../helpers";
+import {createERCDepositData, mpcAddress} from "../../helpers";
 import {ContractTypesMap} from "hardhat/types";
 import {createResourceID, deploySourceChainContracts} from "../../helpers";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
@@ -24,24 +24,21 @@ describe("XC20Handler - [Deposit Burn XC20]", () => {
 
   let admin: WalletClient;
   let depositor: WalletClient;
-  let recipient: WalletClient;
-  let EOA_Address: WalletClient;
 
   let resourceID1: Hex;
   let resourceID2: Hex;
-  let depositData: Hex;
   let burnableContractAddresses: Array<Hex>;
 
   beforeEach(async () => {
     ({
       BridgeInstance,
       XC20HandlerInstance,
+      ERC20MintableInstance: ERC20MintableInstance1,
+      ERC20MintableInstance: ERC20MintableInstance2
     } = await loadFixture(deploySourceChainContracts));
     [
       admin,
       depositor,
-      recipient,
-      EOA_Address,
     ] = await hre.viem.getWalletClients();
 
 
@@ -83,12 +80,6 @@ describe("XC20Handler - [Deposit Burn XC20]", () => {
       ERC20MintableInstance1.address
     ]);
 
-    depositData = createERCDepositData(
-      depositAmount,
-      20,
-      recipient
-    );
-
     // set MPC address to unpause the Bridge
     await BridgeInstance.write.endKeygen([mpcAddress]);
   });
@@ -97,7 +88,7 @@ describe("XC20Handler - [Deposit Burn XC20]", () => {
     for (const burnableAddress of burnableContractAddresses) {
       const isBurnable = (await XC20HandlerInstance.read._tokenContractAddressToTokenProperties([
         burnableAddress
-      ]));
+      ]))[2];
 
       assert.isTrue(isBurnable, "Contract wasn't successfully marked burnable");
     }

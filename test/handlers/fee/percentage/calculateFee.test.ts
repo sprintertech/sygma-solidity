@@ -3,12 +3,11 @@
 
 import hre from 'hardhat';
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
-import {deploySourceChainContracts} from "../../../helpers";
+import {createERCDepositData, createResourceID, deploySourceChainContracts} from "../../../helpers";
 import {ContractTypesMap} from 'hardhat/types';
 import {Hex, WalletClient} from 'viem';
 import {assert} from 'chai';
 
-const Helpers = require("../../../helpers");
 
 describe("PercentageFeeHandler - [calculateFee]", () => {
   const originDomainID = 1;
@@ -32,6 +31,8 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
       BridgeInstance,
       PercentageFeeHandlerInstance,
       ERC20MintableInstance,
+      FeeHandlerRouterInstance,
+      ERC20HandlerInstance,
     } = await loadFixture(deploySourceChainContracts));
     [
       ,
@@ -61,7 +62,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
 
   it(`should return percentage of token amount for fee if bounds
       are set [lowerBound > 0, upperBound > 0]`, async () => {
-    const depositData = createERCDepositData(100000000, 20, recipient);
+    const depositData = createERCDepositData(BigInt(100000000), 20, recipient.account!.address);
 
     // current fee is set to 0
     let res = await FeeHandlerRouterInstance.read.calculateFee([
@@ -90,7 +91,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
 
   it(`should return percentage of token amount for fee if bounds
       are not set [lowerBound = 0, upperBound = 0]`, async () => {
-    const depositData = createERCDepositData(100000000, 20, recipient);
+    const depositData = createERCDepositData(BigInt(100000000), 20, recipient.account!.address);
 
     // current fee is set to 0
     let res = await FeeHandlerRouterInstance.read.calculateFee([
@@ -117,7 +118,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
   });
 
   it("should return lower bound token amount for fee [lowerBound > 0, upperBound > 0]", async () => {
-    const depositData = createERCDepositData(fee, 20, recipient);
+    const depositData = createERCDepositData(fee, 20, recipient.account!.address);
     await PercentageFeeHandlerInstance.write.changeFeeBounds([resourceID, BigInt(100), BigInt(300)]);
     await PercentageFeeHandlerInstance.write.changeFee([destinationDomainID, resourceID, fee]);
 
@@ -133,7 +134,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
   });
 
   it("should return lower bound token amount for fee [lowerBound > 0, upperBound = 0]", async () => {
-    const depositData = createERCDepositData(fee, 20, recipient);
+    const depositData = createERCDepositData(fee, 20, recipient.account!.address);
     await PercentageFeeHandlerInstance.write.changeFeeBounds([resourceID, BigInt(100), BigInt(0)]);
     await PercentageFeeHandlerInstance.write.changeFee([destinationDomainID, resourceID, fee]);
 
@@ -149,7 +150,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
   });
 
   it("should return upper bound token amount for fee [lowerBound = 0, upperBound > 0]", async () => {
-    const depositData = createERCDepositData(100000000, 20, recipient);
+    const depositData = createERCDepositData(BigInt(100000000), 20, recipient.account!.address);
     await PercentageFeeHandlerInstance.write.changeFeeBounds([resourceID, BigInt(0), BigInt(300)]);
     await PercentageFeeHandlerInstance.write.changeFee([destinationDomainID, resourceID, fee]);
 
@@ -165,7 +166,7 @@ describe("PercentageFeeHandler - [calculateFee]", () => {
   });
 
   it("should return percentage of token amount for fee [lowerBound = 0, upperBound > 0]", async () => {
-    const depositData = createERCDepositData(100000, 20, recipient);
+    const depositData = createERCDepositData(BigInt(100000), 20, recipient.account!.address);
     await PercentageFeeHandlerInstance.write.changeFeeBounds([resourceID, BigInt(0), BigInt(300)]);
     await PercentageFeeHandlerInstance.write.changeFee([destinationDomainID, resourceID, fee]);
 

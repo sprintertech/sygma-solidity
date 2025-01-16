@@ -101,7 +101,7 @@ describe("Bridge - [execute proposal - ERC20]", () => {
   });
 
   it("should create and execute executeProposal successfully", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -146,7 +146,7 @@ describe("Bridge - [execute proposal - ERC20]", () => {
   });
 
   it("should skip executing proposal if deposit nonce is already used", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );
@@ -191,7 +191,7 @@ describe("Bridge - [execute proposal - ERC20]", () => {
   });
 
   it("executeProposal event should be emitted with expected values", async () => {
-    const proposalSignedData = await signTypedProposal(
+    const proposalSignedData = signTypedProposal(
       BridgeInstance.address,
       [proposal]
     );

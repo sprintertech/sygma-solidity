@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 import hre from 'hardhat';
-import {concat, encodeAbiParameters, fromBytes, Hex, keccak256, parseAbiParameters, toBytes, toFunctionSelector, WalletClient, zeroHash} from "viem";
+import {AbiParameter, concat, encodeAbiParameters, fromBytes, Hex, keccak256, parseAbiParameters, toBytes, toFunctionSelector, WalletClient, zeroHash} from "viem";
 import {mpcAddress,createResourceID, deploySourceChainContracts, createGmpDepositData, trimPrefix, constructGenericHandlerSetResourceData, blankFunctionDepositorOffset, blankFunctionSig, signTypedProposal, createGmpExecutionData} from "../../helpers";
 import {ContractTypesMap} from 'hardhat/types';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
@@ -40,6 +40,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
         BridgeInstance,
         TestStoreInstance,
         TestDepositInstance,
+        GmpHandlerInstance,
       } = await loadFixture(deploySourceChainContracts));
       [
         ,
@@ -91,7 +92,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
     });
 
     it("deposit can be executed successfully", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -122,7 +123,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
     });
 
     it("AssetStored event should be emitted", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -161,7 +162,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
     });
 
     it("ProposalExecution should be emitted even if handler execution fails", async () => {
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -257,7 +258,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
         data: depositData,
         resourceID: resourceID,
       };
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
@@ -323,12 +324,11 @@ describe("GmpHandler - [Execute Proposal]", () => {
         data: depositData,
         resourceID: resourceID,
       };
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
-      await expect(
-        BridgeInstance.write.deposit([
+        await BridgeInstance.write.deposit([
           originDomainID,
           resourceID,
           depositData,
@@ -338,7 +338,6 @@ describe("GmpHandler - [Execute Proposal]", () => {
             account: depositor.account
           }
         )
-      ).not.to.be.reverted;
 
       // relayer1 executes the proposal
       const executeTx = await BridgeInstance.write.executeProposal([proposal, proposalSignedData], {
@@ -365,7 +364,8 @@ describe("GmpHandler - [Execute Proposal]", () => {
       const message = fromBytes(toBytes("message"), "hex");
 
       const executionData = createGmpExecutionData(
-        ["uint", "address[]", "bytes"], [num, addresses, message]
+        ["uint", "address[]", "bytes"] as unknown as Array<AbiParameter>,
+        [num, addresses, message]
       );
 
       const depositFunctionSignature = toFunctionSelector(
@@ -385,7 +385,7 @@ describe("GmpHandler - [Execute Proposal]", () => {
         data: depositData,
         resourceID: resourceID,
       };
-      const proposalSignedData = await signTypedProposal(
+      const proposalSignedData = signTypedProposal(
         BridgeInstance.address,
         [proposal]
       );
