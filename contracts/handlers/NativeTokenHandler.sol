@@ -18,19 +18,19 @@ contract NativeTokenHandler is IHandler, ERCHandlerHelpers, DepositDataHelper {
     using ExcessivelySafeCall for address;
 
     uint256 internal constant defaultGas = 50000;
-    address public immutable _nativeTokenAdapterAddress;
+    address public immutable _NativeTokenTransferGatewayAddress;
 
     /**
         @param bridgeAddress Contract address of previously deployed Bridge.
-        @param nativeTokenAdapterAddress Contract address of previously deployed NativeTokenAdapter.
+        @param NativeTokenTransferGatewayAddress Contract address of previously deployed NativeTokenTransferGateway.
         @param defaultMessageReceiver Contract address of previously deployed DefaultMessageReceiver.
      */
     constructor(
         address bridgeAddress,
-        address nativeTokenAdapterAddress,
+        address NativeTokenTransferGatewayAddress,
         address defaultMessageReceiver
     ) DepositDataHelper(bridgeAddress, defaultMessageReceiver) {
-        _nativeTokenAdapterAddress = nativeTokenAdapterAddress;
+        _NativeTokenTransferGatewayAddress = NativeTokenTransferGatewayAddress;
     }
 
     event Withdrawal(address recipient, uint256 amount);
@@ -41,7 +41,7 @@ contract NativeTokenHandler is IHandler, ERCHandlerHelpers, DepositDataHelper {
     error InvalidSender(address sender);
 
     /**
-        @notice A deposit is initiated by making a deposit to the NativeTokenAdapter which constructs the required
+        @notice A deposit is initiated by making a deposit to the NativeTokenTransferGateway which constructs the required
         deposit data and propagates it to the Bridge contract.
         @param resourceID ResourceID used to find address of token to be used for deposit.
         @param depositor Address of account making the deposit in the Bridge contract.
@@ -63,7 +63,7 @@ contract NativeTokenHandler is IHandler, ERCHandlerHelpers, DepositDataHelper {
         uint256 amount;
         (amount) = abi.decode(data, (uint256));
 
-        if(depositor != _nativeTokenAdapterAddress) revert InvalidSender(depositor);
+        if(depositor != _NativeTokenTransferGatewayAddress) revert InvalidSender(depositor);
 
         address tokenAddress = _resourceIDToTokenContractAddress[resourceID];
 

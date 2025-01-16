@@ -27,7 +27,7 @@ jobs:
         run: yarn run compile
 
       - name: Deploy local 1
-        run: yarn run deploy:local:1
+        run: yarn run deploy-local-1
 
       - name: Login to ghcr
         uses: docker/login-action@v2
@@ -47,7 +47,7 @@ jobs:
         run: rm -r data/
 
       - name: Deploy local 2
-        run: yarn run deploy:local:2
+        run: yarn run deploy-local-2
 
       - name: Push docker image to GitHub Packages
         uses: docker/build-push-action@v3
@@ -55,15 +55,6 @@ jobs:
           context: .
           tags: ghcr.io/${{ github.repository }}:evm2-${{ github.ref_name }}
           push: true
-
-      - name: Remove data
-        run: rm -r data/
-
-      - name: Generate types
-        run: yarn run generate-types
-
-      - name: Build packages
-        run: yarn run build
 
       - name: Publish to npm registry
         run: npm publish --access public
